@@ -9,6 +9,8 @@ SPOTIPY_CLIENT_SECRET="..."
 SPOTIPY_REDIRECT_URI="..."
 ```
 
+...
+
 
 ## References
 * [Spotify genre list from andytlr](https://gist.github.com/andytlr/4104c667a62d8145aa3a)
