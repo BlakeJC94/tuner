@@ -1,0 +1,35 @@
+[project]
+name = "tuner"
+version = "0.1.0"
+description = "An application to find other Spotify users with similar music tastes"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pinecone[grpc]>=5.3.1",
+    "spotipy>=2.24.0",
+    "transformers>=4.46.2",
+]
+
+[project.optional-dependencies]
+dev = [
+]
+
+[project.scripts]
+"foo" = "tuner.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["tuner"]
+
+[dependency-groups]
+dev = [
+    "ipython>=8.29.0",
+    "pytest>=8.3.3",
+    "ruff>=0.7.3",
+]
