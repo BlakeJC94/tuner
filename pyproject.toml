@@ -7,8 +7,9 @@ requires-python = ">=3.11"
 dependencies = [
     "pinecone[grpc]>=5.3.1",
     "python-dotenv>=1.0.1",
+    "scikit-learn>=1.5.2",
+    "sentence-transformers>=3.3.0",
     "spotipy>=2.24.0",
-    "transformers>=4.46.2",
 ]
 
 [project.optional-dependencies]
@@ -16,7 +17,7 @@ dev = [
 ]
 
 [project.scripts]
-"foo" = "tuner.__main__:main"
+"tuner" = "tuner.__main__:main"
 
 [build-system]
 requires = ["hatchling"]

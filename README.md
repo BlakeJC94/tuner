@@ -7,6 +7,7 @@ Create a `.env` file with the following values
 SPOTIPY_CLIENT_ID="..."
 SPOTIPY_CLIENT_SECRET="..."
 SPOTIPY_REDIRECT_URI="..."
+PINECONE_API_KEY="..."
 ```
 
 ...
