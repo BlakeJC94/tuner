@@ -107,10 +107,20 @@ index.upsert(
             "values": vec[0].tolist(),
             "metadata": {
                 "display_name": name,
-                "url": name,
+                "url": f"https://test.spotify.com/users/{name}",
                 "genres": [f"{count}:{genre}" for count, genre in list(genres.items())],
+                "artists": artists,
             },
         }
-        for name, vec, genres in zip(("A", "B", "C"), vectors, people)
+        for name, vec, genres, artists in zip(
+            ("A", "B", "C"),
+            vectors,
+            people,
+            (
+                ["Queens of the Stone Age", "Pond"],
+                ["Oddisee", "Tyler the Creator"],
+                ["Rage Against the Machine"],
+            ),
+        )
     ]
 )
