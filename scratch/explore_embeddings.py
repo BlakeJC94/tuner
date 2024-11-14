@@ -21,13 +21,11 @@ genres = [
 # Load model
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # %%
 # Get embeddings for each genre
-embeddings = {
-    g: model.encode(g).reshape(1, -1) for g in genres
-}
+embeddings = {g: model.encode(g).reshape(1, -1) for g in genres}
 
 # %%
 # Compare genres
@@ -43,7 +41,7 @@ pairs = [
     (genres[5], genres[1]),
 ]
 
-for (g1, g2) in pairs:
+for g1, g2 in pairs:
     result = cosine_similarity(embeddings[g1], embeddings[g2])[0][0]
     print(f"Similarity between {g1} and {g2}: {result:.2f}")
 
@@ -69,11 +67,13 @@ people = [
     },
 ]
 
+
 def music_taste_vector(genre_counts, embeddings):
     weighted_embeddings = np.zeros_like(list(embeddings.values())[0])
     for genre, count in genre_counts.items():
         weighted_embeddings += embeddings[genre] * count
     return weighted_embeddings / np.linalg.norm(weighted_embeddings)
+
 
 vectors = [music_taste_vector(p, embeddings) for p in people]
 
@@ -82,7 +82,7 @@ pairs = [
     (0, 2),  # Rap and Rap metal
     (1, 2),  # Alt rock and rap metal
 ]
-for (idx1, idx2) in pairs:
+for idx1, idx2 in pairs:
     result = cosine_similarity(vectors[idx1], vectors[idx2])[0][0]
     print(f"Similarity between {idx1} and {idx2}: {result:.2f}")
 
@@ -96,11 +96,21 @@ load_dotenv()
 
 pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
 
-index = pc.Index(host="https://tuner-genre-vecs-all-minilm-l6-v2-w50ynqp.svc.aped-4627-b74a.pinecone.io")
-
-index.upsert(
-  vectors=[
-    {"id": name, "values": vec[0].tolist()} for name, vec in zip(("A", "B", "C"), vectors)
-  ]
+index = pc.Index(
+    host="https://tuner-genre-vecs-all-minilm-l6-v2-w50ynqp.svc.aped-4627-b74a.pinecone.io"
 )
 
+index.upsert(
+    vectors=[
+        {
+            "id": f"test:user:{name}",
+            "values": vec[0].tolist(),
+            "metadata": {
+                "display_name": name,
+                "url": name,
+                "genres": [f"{count}:{genre}" for count, genre in list(genres.items())],
+            },
+        }
+        for name, vec, genres in zip(("A", "B", "C"), vectors, people)
+    ]
+)
