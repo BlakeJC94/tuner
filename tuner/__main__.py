@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import defaultdict
 
@@ -16,6 +17,9 @@ SCOPE = [
     # "user-read-recently-played",  # Is there a way to use this?
 ]
 
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
@@ -32,7 +36,7 @@ def get_genre_vec(
 def main():
     """Main entrypoint for Tuner."""
 
-    # Log into Spotify
+    logger.info("Logging into Spotify")
     sp = spotipy.Spotify(
         auth_manager=SpotifyOAuth(
             scope=SCOPE,
@@ -42,33 +46,35 @@ def main():
     )
 
     # Get data
+    logger.info("Fetching user data")
     user = sp.current_user()
     results = sp.current_user_top_artists()
 
     # Collect genre counts
+    logger.info("Counting genre appearances")
     genres = defaultdict(lambda: 0)
-    # print("\n", "Top artists:")
+    logger.debug("Top artists:")
     for idx, item in enumerate(results["items"]):
-        # print(f"{idx:02} - {item['name']}")
+        logger.debug(f"{idx:02} - {item['name']}")
         for genre in item["genres"]:
             genres[genre] += 1
 
     genres = sorted(list(genres.items()), key=lambda x: -x[1])
 
-    # print("\n", "Genre counts:")
-    # for genre, count in genres:
-    #     if count < 2:
-    #         continue
-    #     print(count, genre)
+    logger.debug("Genre counts:")
+    for genre, count in genres:
+        if count < 2:
+            continue
+        logger.debug(count, genre)
 
     # Get genre embeddings
+    logger.info("Embedding genres")
     embeddings = {g: model.encode(g).reshape(1, -1) for g, _ in genres}
-
-    # Create genre vector
     genre_vec = get_genre_vec(genres, embeddings)
     genre_vec = genre_vec[0].tolist()
 
-    # TODO Log to database
+    # Log to database
+    logger.info("Logging to database")
     pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
     index = pc.Index(
         host="https://tuner-genre-vecs-all-minilm-l6-v2-w50ynqp.svc.aped-4627-b74a.pinecone.io"
@@ -88,6 +94,7 @@ def main():
     )
 
     # Get other users
+    logger.info("Searching for matches")
     matches = index.query(
         vector=genre_vec,
         top_k=4,
@@ -100,6 +107,7 @@ def main():
         print("No matches found, check back later when more users use Tuner.")
         return 0
 
+    logger.info("Printing result")
     match = matches[0]
 
     # Display results
@@ -122,9 +130,9 @@ def main():
     for g in shared_genres:
         print(f"- {g}")
     print("")
-    print(f"Check out their profile at {match_url}")
+    print(f"Check out their Spotify profile at {match_url}")
 
-    print("Done!")
+    logging.info("Done!")
     return 0
 
 
