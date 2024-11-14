@@ -54,8 +54,11 @@ def main():
     logger.info("Counting genre appearances")
     genres = defaultdict(lambda: 0)
     logger.debug("Top artists:")
+    artists = []
     for idx, item in enumerate(results["items"]):
-        logger.debug(f"{idx:02} - {item['name']}")
+        artist = item['name']
+        artists.append(artist)
+        logger.debug(f"{idx:02} - {artist}")
         for genre in item["genres"]:
             genres[genre] += 1
 
@@ -88,6 +91,7 @@ def main():
                     "display_name": user["display_name"],
                     "url": user["external_urls"]["spotify"],
                     "genres": [f"{count}:{genre}" for count, genre in genres],
+                    "artists": artists,
                 },
             },
         ]
@@ -113,6 +117,7 @@ def main():
     # Display results
     match_display_name = match['metadata']["display_name"]
     match_url = match['metadata']["url"]
+    match_artists = match['metadata']["artists"]
 
     match_genres = {}
     for g in match['metadata']["genres"]:
@@ -125,12 +130,30 @@ def main():
         shared_genres.add(genres[i][0].strip().title())
         shared_genres.add(match_genres[i][0].strip().title())
 
-    print(f"Match found: '{match_display_name}'", "\n")
+    shared_artists = set(match_artists).intersection(set(artists))
+    recommended_artists = [a for a in match_artists if a not in shared_artists]
+
+    print(f"Match found: '{match_display_name}'")
+    print("")
     print("You have a shared interest in the following genres:")
     for g in shared_genres:
         print(f"- {g}")
     print("")
-    print(f"Check out their Spotify profile at {match_url}")
+
+    if shared_artists:
+        print("You both enjoy the following artists:")
+        for a in list(shared_artists)[:3]:
+            print(f"- {a}")
+        print("")
+
+    print(f"'{match_display_name}' also enjoys the following artists:")
+    for a in recommended_artists[:6]:
+        print(f"- {a}")
+    print("")
+
+    print("Check out their public playlists on their Spotify profile:")
+    print(f"    {match_url}")
+
 
     logging.info("Done!")
     return 0
