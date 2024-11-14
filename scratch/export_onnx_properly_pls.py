@@ -10,13 +10,21 @@ genres = [
     "Metalcore",
 ]
 
+MODEL_NAME = "all-MiniLM-L6-v2"
+MODEL_REPO = "sentence-transformers"
+REVISION = "fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+
+MODEL_PATH =f"{MODEL_REPO}/{MODEL_NAME}"
+
 # %% Load native model and get embeddings
 from sentence_transformers import SentenceTransformer
 
+
 def get_native_embeddings(genres):
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    model = SentenceTransformer(MODEL_NAME, revision=REVISION)
     embeddings = [model.encode(g) for g in genres]
     return embeddings
+
 
 native_embeddings = get_native_embeddings(genres)
 
@@ -28,13 +36,12 @@ import torch
 # Set the file path for the exported model
 onnx_path = Path("model.onnx")
 
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
 def export_native_to_onnx(genres, onnx_path):
 
     # Load the same underlying model and tokenizer
-    transformer_model = AutoModel.from_pretrained(MODEL_NAME)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    transformer_model = AutoModel.from_pretrained(MODEL_PATH, revision=REVISION)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, revision=REVISION)
 
     # Prepare a sample input for ONNX export (a dummy input is necessary)
     text = genres[0]
@@ -50,10 +57,11 @@ def export_native_to_onnx(genres, onnx_path):
         dynamic_axes={
             "input_ids": {0: "batch_size", 1: "sequence_length"},
             "attention_mask": {0: "batch_size", 1: "sequence_length"},
-            "last_hidden_state": {0: "batch_size", 1: "sequence_length"}
+            "last_hidden_state": {0: "batch_size", 1: "sequence_length"},
         },
         opset_version=14,
     )
+
 
 export_native_to_onnx(genres, onnx_path)
 
@@ -64,11 +72,10 @@ import numpy as np
 
 def get_onnx_embeddings(genres, onnx_path):
     ort_session = ort.InferenceSession(str(onnx_path))
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 
     embeddings = []
     for text in genres:
-
         inputs = tokenizer(text, return_tensors="np")
         input_ids = inputs["input_ids"]
         attention_mask = inputs["attention_mask"]
@@ -89,7 +96,9 @@ def get_onnx_embeddings(genres, onnx_path):
 
     return embeddings
 
+
 onnx_embeddings = get_onnx_embeddings(genres, onnx_path)
+
 
 # %% Compare results
 def compare_results(genres, native_embeddings, onnx_embeddings):
@@ -103,5 +112,6 @@ def compare_results(genres, native_embeddings, onnx_embeddings):
             np.linalg.norm(original_embedding) * np.linalg.norm(onnx_embedding)
         )
         print(f"Cosine similarity for {genre}: {cos_sim:.4f}")
+
 
 compare_results(genres, native_embeddings, onnx_embeddings)
