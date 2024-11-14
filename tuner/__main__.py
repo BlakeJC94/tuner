@@ -20,8 +20,6 @@ SCOPE = [
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
 
 def get_genre_vec(
     genre_counts: list[tuple[str, int]],
@@ -35,6 +33,7 @@ def get_genre_vec(
 
 def main():
     """Main entrypoint for Tuner."""
+    model = SentenceTransformer("all-MiniLM-L6-v2")
 
     logger.info("Logging into Spotify")
     sp = spotipy.Spotify(
