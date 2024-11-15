@@ -30,10 +30,13 @@ def get_genre_vec(
         weighted_embeddings += embeddings[genre] * count
     return weighted_embeddings / np.linalg.norm(weighted_embeddings)
 
+def encode_genres(genres):
+    model = SentenceTransformer(MODEL_NAME)
+    embeddings = {g: model.encode(g).reshape(1, -1) for g, _ in genres}
+    return embeddings
 
 def main():
     """Main entrypoint for Tuner."""
-    model = SentenceTransformer("all-MiniLM-L6-v2")
 
     logger.info("Logging into Spotify")
     sp = spotipy.Spotify(
@@ -71,7 +74,7 @@ def main():
 
     # Get genre embeddings
     logger.info("Embedding genres")
-    embeddings = {g: model.encode(g).reshape(1, -1) for g, _ in genres}
+    embeddings = encode_genres(genres)
     genre_vec = get_genre_vec(genres, embeddings)
     genre_vec = genre_vec[0].tolist()
 
