@@ -3,37 +3,23 @@ import os
 from collections import defaultdict
 
 import spotipy
-import numpy as np
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import MemoryCacheHandler
-from sentence_transformers import SentenceTransformer
 from pinecone.grpc import PineconeGRPC as Pinecone
 
-load_dotenv()
+from tuner.globals import (
+    SCOPE,
+    ONNX_PATH,
+)
+from tuner.encode import get_genre_vec, encode_genres
+from tuner.download import download_model
 
-SCOPE = [
-    "user-top-read",
-    # "user-read-recently-played",  # Is there a way to use this?
-]
+load_dotenv()
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-
-def get_genre_vec(
-    genre_counts: list[tuple[str, int]],
-    embeddings: dict[str, np.ndarray],
-) -> np.ndarray:
-    weighted_embeddings = np.zeros_like(list(embeddings.values())[0])
-    for genre, count in genre_counts:
-        weighted_embeddings += embeddings[genre] * count
-    return weighted_embeddings / np.linalg.norm(weighted_embeddings)
-
-def encode_genres(genres):
-    model = SentenceTransformer(MODEL_NAME)
-    embeddings = {g: model.encode(g).reshape(1, -1) for g, _ in genres}
-    return embeddings
 
 def main():
     """Main entrypoint for Tuner."""
@@ -58,7 +44,7 @@ def main():
     logger.debug("Top artists:")
     artists = []
     for idx, item in enumerate(results["items"]):
-        artist = item['name']
+        artist = item["name"]
         artists.append(artist)
         logger.debug(f"{idx:02} - {artist}")
         for genre in item["genres"]:
@@ -71,6 +57,10 @@ def main():
         if count < 2:
             continue
         logger.debug(count, genre)
+
+    if not os.path.exists(ONNX_PATH):
+        logger.info("Model not found, downloading")
+        download_model()
 
     # Get genre embeddings
     logger.info("Embedding genres")
@@ -101,13 +91,19 @@ def main():
 
     # Get other users
     logger.info("Searching for matches")
-    matches = index.query(
-        vector=genre_vec,
-        top_k=4,
-        include_values=False,
-        include_metadata=True,
-    ).to_dict().get('matches', [])
-    matches = sorted((m for m in matches if m['id'] != user['uri']), key=lambda x: -x['score'])
+    matches = (
+        index.query(
+            vector=genre_vec,
+            top_k=4,
+            include_values=False,
+            include_metadata=True,
+        )
+        .to_dict()
+        .get("matches", [])
+    )
+    matches = sorted(
+        (m for m in matches if m["id"] != user["uri"]), key=lambda x: -x["score"]
+    )
 
     if not matches:
         print("No matches found, check back later when more users use Tuner.")
@@ -117,12 +113,12 @@ def main():
     match = matches[0]
 
     # Display results
-    match_display_name = match['metadata']["display_name"]
-    match_url = match['metadata']["url"]
-    match_artists = match['metadata']["artists"]
+    match_display_name = match["metadata"]["display_name"]
+    match_url = match["metadata"]["url"]
+    match_artists = match["metadata"]["artists"]
 
     match_genres = {}
-    for g in match['metadata']["genres"]:
+    for g in match["metadata"]["genres"]:
         genre, count = g.split(":", 1)
         match_genres[genre] = int(count)
     match_genres = sorted(list(match_genres.items()), key=lambda x: -x[1])
@@ -155,7 +151,6 @@ def main():
 
     print("Check out their public playlists on their Spotify profile:")
     print(f"    {match_url}")
-
 
     logging.info("Done!")
     return 0
