@@ -137,28 +137,28 @@ a {
 .center-justify h1 {
     text-align: center;
     font-size: 40px;
-    color: black;
+    color: white;
     padding: 15px;
 }
 
 .center-justify h2 {
     text-align: center;
     font-size: 30px;
-    color: black;
+    color: white;
     padding: 5px;
 }
 
 .center-justify h3 {
     text-align: center;
     font-size: 20px;
-    color: black;
+    color: white;
     padding: 5px;
 }
 
 .center-justify h4 {
     text-align: justify;
     font-size: 18px;
-    color: black;
+    color: white;
     padding: 5px;
 }
 
@@ -472,7 +472,7 @@ input[type="checkbox"] {
 
     .nav-links.active a {
         text-decoration: none;
-        color: black;
+        color: white;
         font-size: 16px;
     }
 
