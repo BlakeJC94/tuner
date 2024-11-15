@@ -22,7 +22,7 @@ from sentence_transformers import SentenceTransformer
 
 def get_native_embeddings(genres):
     model = SentenceTransformer(MODEL_NAME, revision=REVISION)
-    embeddings = [model.encode(g) for g in genres]
+    embeddings = [model.encode(g).reshape(1, -1) for g in genres]
     return embeddings
 
 
@@ -92,7 +92,7 @@ def get_onnx_embeddings(genres, onnx_path):
         # Pool the outputs (average pooling for sentence embedding)
         last_hidden_state = onnx_outputs[0]
         pooled_output = np.mean(last_hidden_state, axis=1)
-        embeddings.append(pooled_output[0])
+        embeddings.append(pooled_output[0].reshape(1, -1))
 
     return embeddings
 
@@ -107,6 +107,8 @@ def compare_results(genres, native_embeddings, onnx_embeddings):
         native_embeddings,
         onnx_embeddings,
     ):
+        original_embedding, onnx_embedding = original_embedding[0], onnx_embedding[0]
+
         # Check the similarity between the embeddings (cosine similarity)
         cos_sim = np.dot(original_embedding, onnx_embedding) / (
             np.linalg.norm(original_embedding) * np.linalg.norm(onnx_embedding)
