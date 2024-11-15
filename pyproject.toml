@@ -5,16 +5,11 @@ description = "An application to find other Spotify users with similar music tas
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "optimum[onnxruntime]>=1.23.3",
+    "onnxruntime>=1.20.0",
     "pinecone[grpc]>=5.3.1",
     "python-dotenv>=1.0.1",
-    "scikit-learn>=1.5.2",
-    "sentence-transformers>=3.3.0",
     "spotipy>=2.24.0",
-]
-
-[project.optional-dependencies]
-dev = [
+    "transformers>=4.46.2",
 ]
 
 [project.scripts]
@@ -32,7 +27,9 @@ packages = ["tuner"]
 
 [dependency-groups]
 dev = [
-    "ipython>=8.29.0",
-    "pytest>=8.3.3",
+    "sentence-transformers>=3.3.0",
+    "scikit-learn>=1.5.2",
     "ruff>=0.7.3",
+    "pytest>=8.3.3",
+    "ipython>=8.29.0",
 ]
