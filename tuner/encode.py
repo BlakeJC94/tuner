@@ -39,4 +39,6 @@ def get_genre_vec(
     weighted_embeddings = np.zeros_like(list(embeddings.values())[0])
     for genre, count in genre_counts:
         weighted_embeddings += embeddings[genre] * count
-    return weighted_embeddings / np.linalg.norm(weighted_embeddings)
+
+    weighted_embeddings = weighted_embeddings / np.linalg.norm(weighted_embeddings)
+    return weighted_embeddings[0].tolist()
