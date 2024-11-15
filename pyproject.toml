@@ -5,6 +5,7 @@ description = "An application to find other Spotify users with similar music tas
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "flask>=3.1.0",
     "onnxruntime>=1.20.0",
     "pinecone[grpc]>=5.3.1",
     "python-dotenv>=1.0.1",

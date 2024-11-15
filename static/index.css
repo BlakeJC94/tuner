@@ -1,0 +1,501 @@
+/* General Styles */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: white;
+    background-color: #000;
+    padding-top: 80px;
+    overflow-x: hidden;
+}
+
+header {
+    background-color: black;
+    z-index: 1000;
+    padding: 20px 40px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+.hamburger {
+    display: none;
+}
+
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    color: white;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px;
+}
+
+
+.nav-links {
+    list-style-type: none;
+    display: flex;
+    color: white;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+}
+
+.nav-links a:hover {
+    color: #7089e2;
+}
+
+.logo a {
+    color: white;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo a:hover {
+    color: #1DB954;
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 75px;
+    background-image: url('/static/foo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100px;
+    z-index: 1;
+}
+
+.hero h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #1DB954;
+    text-shadow: 10px 10px 20px rgb(99, 99, 99);
+}
+
+.hero p {
+    font-size: 16px;
+    color: white;
+    margin-top: 0px;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.cta-button-large {
+    background-color: #1DB954;
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.cta-button-large:hover {
+    background-color: #25904C;
+}
+
+.cta-button-large:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+a {
+    text-decoration: none;
+  }
+
+
+/* Text Alignment and Spacing */
+.center-justify {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.8;
+    margin-top: 40px;
+    margin-bottom: 60px;
+}
+
+.center-justify h1 {
+    text-align: center;
+    font-size: 40px;
+    color: black;
+    padding: 15px;
+}
+
+.center-justify h2 {
+    text-align: center;
+    font-size: 30px;
+    color: black;
+    padding: 5px;
+}
+
+.center-justify h3 {
+    text-align: center;
+    font-size: 20px;
+    color: black;
+    padding: 5px;
+}
+
+.center-justify h4 {
+    text-align: justify;
+    font-size: 18px;
+    color: black;
+    padding: 5px;
+}
+
+.center-justify h4 b {
+    text-align: justify;
+    font-size: 18px;
+    color: #7089e2;
+    padding-right: 1px;
+}
+
+.center-justify p {
+    margin-bottom: 30px;
+    text-align: justify;
+}
+
+.center-justify p li {
+    text-align: justify;
+}
+
+.center-justify ol,
+.center-justify ul
+.center-justify div {
+    text-align: left;
+}
+
+/* File Upload Page */
+#browse-files {
+    display: inline-block;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+#browse-files:hover {
+    background-color: #333;
+}
+
+#drag-drop-area {
+    border: 2px dashed #bcc5e2;
+    padding: 40px;
+    margin: 20px 0;
+    background-color: #dbe1f0;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+}
+
+#drag-drop-area.dragging {
+    border-color: #bcc5e2;
+    background-color: #cacfe2;
+}
+
+#progress-bar {
+    width: 100%;
+    max-width: 600px;
+    height: 25px;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#progress-bar::-webkit-progress-bar {
+    background-color: white;
+    border-radius: 15px;
+}
+
+#progress-bar::-webkit-progress-value {
+    background-color: #5C53D4;
+    border-radius: 15px;
+}
+
+#progress-bar::-moz-progress-bar {
+    background-color: #5C53D4;
+    border-radius: 15px;
+}
+
+/* Chronotypes Page */
+.chronotypes {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.chronotype-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.chronotype-icon {
+    width: 20%;
+    height: auto;
+}
+
+.chronotype-description {
+    flex: 1;
+    text-align: center;
+}
+
+/* Upload Instructions Page */
+.device-select-container {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 25px;
+}
+
+.device-select-container select {
+    padding: 10px 20px;
+    font-size: 25px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.device-instructions-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 40px auto;
+    max-width: 1000px;
+    text-align: left;
+}
+
+.device-instructions-container h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.device-instructions-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.device-instructions-flex p {
+    max-width: 500px;
+}
+
+.device-instructions {
+    padding-right: 20px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.device-instructions-icon {
+    width: 40%;
+    height: auto;
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+input[type="email"] {
+  width: 100%;
+  max-width: 300px;
+}
+
+input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.extra-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Bokeh Plot Formatting */
+.bk-root {
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* General styling for plot container */
+#plotContainer {
+    width: 100%;
+    max-width: 100%;
+    /* This ensures it doesn’t overflow the screen */
+    height: auto;
+    overflow-x: auto;
+    /* This allows horizontal scrolling if necessary */
+    text-align: center;
+    margin: 0 auto;
+}
+
+.bk-root .bk-row {
+    display: flex;
+    align-items: center;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+
+/* General Mobile Responsiveness */
+@media (max-width: 600px) {
+    body {
+        font-size: 0.875rem;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .hero {
+        padding: 50px 20px;
+        height: auto;
+        background-size: cover;
+    }
+
+    .hero h1 {
+        font-size: 24px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+
+    .device-instructions-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chronotype-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chronotype-icon {
+        width: 50px;
+    }
+
+    .device-instructions-container {
+        flex-direction: column;
+        max-width: 100%;
+        margin: 20px 0;
+    }
+
+    .center-justify {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    #drag-drop-area {
+        max-width: 90%;
+        /* Adjust this percentage as needed */
+        padding: 20px;
+        /* Reduce padding for smaller screens */
+    }
+
+    /* Ensure the menu-container holds the hamburger and the nav-links */
+    .menu-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    /* By default, hide the navigation links */
+    .nav-links {
+        display: flex;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: white;
+        font-size: 4px;
+    }
+
+    /* Hamburger icon should always be visible */
+    .hamburger {
+        display: flex;
+        font-size: 28px;
+        margin-left: auto;
+    }
+
+    /* When the 'active' class is added, show the nav-links */
+    .nav-links.active {
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 60px;
+        right: 0px;
+        background-color: white;
+        padding: 10px;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .nav-links.active a {
+        text-decoration: none;
+        color: black;
+        font-size: 16px;
+    }
+
+    /* Ensure links look good in mobile */
+    .nav-links li {
+        margin: 10px 0;
+    }
+
+    #plotContainer {
+        width: 100%;
+        /* Make sure the plot takes up 100% of the mobile screen */
+        max-width: 100%;
+        padding: 0;
+        /* No padding on mobile */
+    }
+
+    .bk-root {
+        width: 100%;
+        /* Ensure the Bokeh plot itself fits within the container */
+        max-width: 100%;
+        overflow-x: auto;
+        /* Allow the plot to scroll horizontally if needed */
+    }
+
+}
+
