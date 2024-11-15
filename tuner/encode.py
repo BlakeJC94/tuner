@@ -10,7 +10,7 @@ def encode_genres(genres):
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, revision=REVISION)
 
     embeddings = {}
-    for genre in genres:
+    for genre, _ in genres:
         inputs = tokenizer(genre, return_tensors="np")
         input_ids = inputs["input_ids"]
         attention_mask = inputs["attention_mask"]
