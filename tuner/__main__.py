@@ -10,6 +10,7 @@ from pinecone.grpc import PineconeGRPC as Pinecone
 
 from tuner.globals import (
     SCOPE,
+    PINECONE_HOST,
     ONNX_PATH,
 )
 from tuner.encode import get_genre_vec, encode_genres
@@ -71,9 +72,7 @@ def main():
     # Log to database
     logger.info("Logging to database")
     pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
-    index = pc.Index(
-        host="https://tuner-genre-vecs-all-minilm-l6-v2-w50ynqp.svc.aped-4627-b74a.pinecone.io"
-    )
+    index = pc.Index(host=PINECONE_HOST)
     index.upsert(
         vectors=[
             {
