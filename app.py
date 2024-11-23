@@ -32,3 +32,6 @@ def login():
         "login.html",
         display_name=match["metadata"]["display_name"],
     )
+
+if __name__ == '__main__':
+   app.run(debug=True)

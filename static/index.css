@@ -73,12 +73,11 @@ header {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 75px;
-    background-image: url('/static/foo.jpg');
+    padding: 100px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: 100px;
+    height: 200px;
     z-index: 1;
 }
 
