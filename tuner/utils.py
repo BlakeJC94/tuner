@@ -26,8 +26,8 @@ def display_match(match, shared_genres, shared_artists, recommended_artists):
     if not match:
         print("No matches found, check back later when more users use Tuner.")
 
-    match_display_name = match["metadata"]["display_name"]
-    match_url = match["metadata"]["url"]
+    match_display_name = match.display_name
+    match_url = match.url
 
     print(f"Match found: '{match_display_name}'")
     print("")
