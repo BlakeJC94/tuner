@@ -1,38 +1,53 @@
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 
 
 logger = logging.getLogger(__name__)
 
+@dataclass
+class TunerData:
+    user: dict
+    user_top_artists: dict
+
+    @property
+    def artists(self) -> list[str]:
+        artists = []
+        for idx, item in enumerate(self.user_top_artists["items"]):
+            artist = item["name"]
+            artists.append(artist)
+        return artists
+
+    @property
+    def genres(self) -> list[tuple[str, int]]:
+        genres = defaultdict(lambda: 0)
+        for idx, item in enumerate(self.user_top_artists["items"]):
+            for genre in item["genres"]:
+                genres[genre] += 1
+        return sorted(list(genres.items()), key=lambda x: -x[1])
+
+
+    @property
+    def db_metadata(self):
+        return {
+            "display_name": self.user["display_name"],
+            "url": self.user["external_urls"]["spotify"],
+            "genres": [f"{count}:{genre}" for count, genre in self.genres],
+            "artists": self.artists,
+        }
+
+
 def get_data(sp):
     logger.info("Fetching user data")
-    user = sp.current_user()
-    results = sp.current_user_top_artists()
-
-    # Collect genre counts
-    logger.info("Counting genre appearances")
-    genres = defaultdict(lambda: 0)
-    logger.debug("Top artists:")
-    artists = []
-    for idx, item in enumerate(results["items"]):
-        artist = item["name"]
-        artists.append(artist)
-        logger.debug(f"{idx:02} - {artist}")
-        for genre in item["genres"]:
-            genres[genre] += 1
-
-    genres = sorted(list(genres.items()), key=lambda x: -x[1])
-
-    logger.debug("Genre counts:")
-    for genre, count in genres:
-        if count < 2:
-            continue
-        logger.debug(count, genre)
-
-    return user, artists, genres
+    return TunerData(
+        sp.current_user(),
+        sp.current_user_top_artists(),
+    )
 
 
-def match_overlap(match, genres, artists):
+def match_overlap(match, data):
+    genres = data.genres
+    artists = data.artists
     # Display results
     match_artists = match["metadata"]["artists"]
 

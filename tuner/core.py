@@ -1,9 +1,6 @@
 import logging
-import os
 
-from tuner.globals import ONNX_PATH
-from tuner.encode import get_genre_vec, encode_genres
-from tuner.download import download_model
+from tuner.encode import get_genre_vec
 from tuner.db import (
     get_pinecone_index,
     upload_genre_vector,
@@ -21,25 +18,20 @@ def tuner_match(session=None):
     sp = get_spotify_client(session)
 
     # Get data
-    user, artists, genres = get_data(sp)
-
-    if not os.path.exists(ONNX_PATH):
-        logger.info("Model not found, downloading")
-        download_model()
+    data = get_data(sp)
 
     # Get genre embeddings
     logger.info("Embedding genres")
-    embeddings = encode_genres(genres)
-    genre_vec = get_genre_vec(genres, embeddings)
+    genre_vec = get_genre_vec(data)
 
     # Log to database
     logger.info("Logging to database")
     index = get_pinecone_index()
-    upload_genre_vector(index, user, genre_vec, genres, artists)
+    upload_genre_vector(index, data, genre_vec)
 
     # Get other users
     logger.info("Searching for matches")
-    matches = search_for_matches(index, user, genre_vec)
+    matches = search_for_matches(index, data, genre_vec)
 
     if not matches:
         logger.warning("No matches found")
@@ -49,7 +41,6 @@ def tuner_match(session=None):
     match = select_match(matches)
     shared_genres, shared_artists, recommended_artists = match_overlap(
         match,
-        genres,
-        artists,
+        data,
     )
     return match, shared_genres, shared_artists, recommended_artists

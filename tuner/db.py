@@ -10,24 +10,20 @@ def get_pinecone_index():
     return pc.Index(host=PINECONE_HOST)
 
 
-def upload_genre_vector(index, user, genre_vec, genres, artists):
+def upload_genre_vector(index, data, genre_vec):
     index.upsert(
         vectors=[
             {
-                "id": user["uri"],
+                "id": data.user["uri"],
                 "values": genre_vec,
-                "metadata": {
-                    "display_name": user["display_name"],
-                    "url": user["external_urls"]["spotify"],
-                    "genres": [f"{count}:{genre}" for count, genre in genres],
-                    "artists": artists,
-                },
+                "metadata": data.db_metadata,
             },
         ]
     )
 
 
-def search_for_matches(index, user, genre_vec):
+def search_for_matches(index, data, genre_vec):
+    user = data.user
     matches = (
         index.query(
             vector=genre_vec,

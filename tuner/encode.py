@@ -1,11 +1,19 @@
+import logging
+import os
+
 import numpy as np
 import onnxruntime as ort
 
 from tuner.globals import ONNX_PATH, MODEL_PATH, REVISION
+from tuner.download import download_model
 from transformers import AutoTokenizer
 
+logger = logging.getLogger(__name__)
 
-def encode_genres(genres):
+
+# TODO replace with sqlite
+def encode_genres(data):
+    genres = data.genres
     ort_session = ort.InferenceSession(ONNX_PATH)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, revision=REVISION)
 
@@ -32,10 +40,14 @@ def encode_genres(genres):
     return embeddings
 
 
-def get_genre_vec(
-    genre_counts: list[tuple[str, int]],
-    embeddings: dict[str, np.ndarray],
-) -> np.ndarray:
+def get_genre_vec(data) -> list[float]:
+    if not os.path.exists(ONNX_PATH):
+        logger.info("Model not found, downloading")
+        download_model()
+
+    embeddings = encode_genres(data)
+    genre_counts = data.genres
+
     weighted_embeddings = np.zeros_like(list(embeddings.values())[0])
     for genre, count in genre_counts:
         weighted_embeddings += embeddings[genre] * count
