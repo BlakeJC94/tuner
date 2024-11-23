@@ -1,10 +1,7 @@
 import logging
 import os
 
-import spotipy
 from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.cache_handler import FlaskSessionCacheHandler
 from flask import Flask, render_template, session
 
 from tuner.core import tuner_match
@@ -30,8 +27,16 @@ def login():
     match, shared_genres, shared_artists, recommended_artists = tuner_match(session)
     return render_template(
         "login.html",
-        display_name=match["metadata"]["display_name"],
+        match={
+            "name": match["metadata"]["display_name"],
+            "score": match["score"],
+            "profile_link": match["metadata"]["url"],
+            "common_genres": shared_genres,
+            "common_artists": shared_artists,
+            "recommended_artists": recommended_artists,
+        },
     )
 
-if __name__ == '__main__':
-   app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(debug=True)

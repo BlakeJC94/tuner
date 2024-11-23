@@ -4,11 +4,51 @@
 
 {% block content %}
 
+<section class="hero">
+    <!-- <img width="270px" src="{{ url_for('static', filename='img/logo_640.svg') }}"> -->
+    <h1>Your Music Match</h1>
+    <!-- <a href="{{ url_for('login') }}" class="cta-button-large">Launch Tuner</a> -->
+</section>
 <section class="center-justify">
-    <h1>Logging into Spotify ...</h1>
-    <p>
-        Hello {{ display_name }}
-    </p>
+    <div class="container">
+        <!-- Matching Profile Section -->
+        <section class="center-justify">
+            <h2>
+                You matched with
+                <a href="{{ match.profile_link }}" class="profile-link">{{ match.name }}</a>
+            </h2>
+        </section>
+
+        <!-- Common Genres Section -->
+        <div class="section">
+            <h2>Common Genres</h2>
+            <ul>
+                {% for genre in match.common_genres %}
+                <li>{{ genre }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Common Artists Section -->
+        <div class="section">
+            <h2>Common Artists</h2>
+            <ul>
+                {% for artist in match.common_artists %}
+                <li>{{ artist }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Recommended Artists Section -->
+        <div class="section">
+            <h2>Artists You May Like</h2>
+            <ul>
+                {% for artist in match.recommended_artists %}
+                <li>{{ artist }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </section>
 
 {% endblock %}
