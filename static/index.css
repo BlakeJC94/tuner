@@ -72,7 +72,7 @@ header {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: 260px;
+    height: 280px;
     z-index: 1;
 }
 
@@ -129,10 +129,10 @@ a {
 }
 
 .center-justify h1 {
-    text-align: center;
-    font-size: 30px;
-    color: white;
-    padding: 10px;
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #1DB954;
+    text-shadow: 10px 10px 20px rgb(99, 99, 99);
 }
 
 .center-justify h2 {
@@ -178,7 +178,7 @@ a {
     text-align: left;
 }
 
-/* Login page */
+/* Results page */
 .profile-link {
     color: #007BFF;
     text-decoration: none;
@@ -202,157 +202,10 @@ ul li {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* File Upload Page */
-#browse-files {
-    display: inline-block;
-    margin-left: 10px;
-    cursor: pointer;
-}
-
-#browse-files:hover {
-    background-color: #333;
-}
-
-#drag-drop-area {
-    border: 2px dashed #bcc5e2;
-    padding: 40px;
-    margin: 20px 0;
-    background-color: #dbe1f0;
-    border-radius: 10px;
-    cursor: pointer;
-    text-align: center;
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: auto;
-}
-
-#drag-drop-area.dragging {
-    border-color: #bcc5e2;
-    background-color: #cacfe2;
-}
-
-#progress-bar {
-    width: 100%;
-    max-width: 600px;
-    height: 25px;
-    border-radius: 15px;
-    background-color: #f0f0f0;
-    border: 1px solid #cccccc;
-    box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-#progress-bar::-webkit-progress-bar {
-    background-color: white;
-    border-radius: 15px;
-}
-
-#progress-bar::-webkit-progress-value {
-    background-color: #5C53D4;
-    border-radius: 15px;
-}
-
-#progress-bar::-moz-progress-bar {
-    background-color: #5C53D4;
-    border-radius: 15px;
-}
-
-/* Chronotypes Page */
-.chronotypes {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.chronotype-item {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.chronotype-icon {
-    width: 20%;
-    height: auto;
-}
-
-.chronotype-description {
-    flex: 1;
-    text-align: center;
-}
-
-/* Upload Instructions Page */
-.device-select-container {
-    text-align: center;
-    margin: 20px 0;
-    font-size: 25px;
-}
-
-.device-select-container select {
-    padding: 10px 20px;
-    font-size: 25px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.device-instructions-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin: 40px auto;
-    max-width: 1000px;
-    text-align: left;
-}
-
-.device-instructions-container h2 {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.device-instructions-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-}
-
-.device-instructions-flex p {
-    max-width: 500px;
-}
-
-.device-instructions {
-    padding-right: 20px;
-    max-width: 500px;
-    width: 100%;
-}
-
-.device-instructions-icon {
-    width: 40%;
-    height: auto;
-}
-
-
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-label {
-  margin-top: 10px;
-  margin-bottom: 5px;
-}
 
 input[type="email"] {
   width: 100%;
   max-width: 300px;
-}
-
-input[type="checkbox"] {
-  margin-right: 5px;
 }
 
 .extra-container {
@@ -363,36 +216,32 @@ input[type="checkbox"] {
     align-items: center;
 }
 
-/* Bokeh Plot Formatting */
-.bk-root {
+
+/* Donation section */
+.donation-section {
     text-align: center;
-    margin: 0 auto;
+    margin-top: 30px;
+    padding: 20px;
+    background: black;
 }
-
-/* General styling for plot container */
-#plotContainer {
-    width: 100%;
-    max-width: 100%;
-    /* This ensures it doesn’t overflow the screen */
-    height: auto;
-    overflow-x: auto;
-    /* This allows horizontal scrolling if necessary */
-    text-align: center;
-    margin: 0 auto;
+.donation-section p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: white;
 }
-
-.bk-root .bk-row {
-    display: flex;
-    align-items: center;
+.donation-section button {
+    background-color: black;
+    color: black;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
-
-.flex-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
+.donation-section button:hover {
+    background-color: #005c99;
 }
-
 
 /* General Mobile Responsiveness */
 @media (max-width: 600px) {

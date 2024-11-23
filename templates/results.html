@@ -4,10 +4,10 @@
 
 {% block content %}
 
-<section class="hero">
+<section class="center-justify">
     <!-- <img width="270px" src="{{ url_for('static', filename='img/logo_640.svg') }}"> -->
     <h1>Your Music Match</h1>
-    <!-- <a href="{{ url_for('login') }}" class="cta-button-large">Launch Tuner</a> -->
+    <!-- <a href="{{ url_for('results') }}" class="cta-button-large">Launch Tuner</a> -->
 </section>
 <section class="center-justify">
     <div class="container">
@@ -48,6 +48,20 @@
                 {% endfor %}
             </ul>
         </div>
+    </div>
+</section>
+<section class="center-justify">
+    <div class="donation-section">
+        <p style="text-align: center;">If you enjoyed this service and want to support it, consider buying me a coffee :)</p>
+        <form action="https://www.paypal.com/donate" method="post" target="_blank">
+            <input type="hidden" name="business" value="blakejamescook@gmail.com">
+            <input type="hidden" name="no_recurring" value="0">
+            <input type="hidden" name="currency_code" value="USD">
+            <input type="hidden" name="item_name" value="Support Tuner Development">
+            <button type="submit" style="background-color: #0070ba; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                Donate
+            </button>
+        </form>
     </div>
 </section>
 

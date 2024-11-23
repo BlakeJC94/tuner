@@ -22,18 +22,49 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/login")
-def login():
-    match, shared_genres, shared_artists, recommended_artists = tuner_match(session)
+@app.route("/results")
+def results():
+    if "match" in session:
+        (
+            match,
+            shared_genres,
+            shared_artists,
+            recommended_artists,
+        ) = (
+            session["match"],
+            session["shared_genres"],
+            session["shared_artists"],
+            session["recommended_artists"],
+        )
+    else:
+        (
+            match,
+            shared_genres,
+            shared_artists,
+            recommended_artists,
+        ) = tuner_match(session)
+
+        (
+            session["match"],
+            session["shared_genres"],
+            session["shared_artists"],
+            session["recommended_artists"],
+        ) = (
+            match,
+            list(shared_genres),
+            list(shared_artists),
+            list(recommended_artists),
+        )
+
     return render_template(
-        "login.html",
+        "results.html",
         match={
-            "name": match["metadata"]["display_name"],
-            "score": match["score"],
-            "profile_link": match["metadata"]["url"],
-            "common_genres": shared_genres,
-            "common_artists": shared_artists,
-            "recommended_artists": recommended_artists,
+            "name": session["match"]["metadata"]["display_name"],
+            "score": session["match"]["score"],
+            "profile_link": session["match"]["metadata"]["url"],
+            "common_genres": session["shared_genres"],
+            "common_artists": session["shared_artists"],
+            "recommended_artists": session["recommended_artists"],
         },
     )
 
