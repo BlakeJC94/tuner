@@ -6,12 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "flask>=3.1.0",
-    "onnx>=1.17.0",
-    "onnxruntime>=1.20.0",
     "pinecone[grpc]>=5.3.1",
     "python-dotenv>=1.0.1",
     "spotipy>=2.24.0",
-    "transformers>=4.46.2",
 ]
 
 [project.scripts]
