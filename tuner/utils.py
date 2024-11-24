@@ -6,6 +6,7 @@ from spotipy.cache_handler import MemoryCacheHandler, FlaskSessionCacheHandler
 from tuner.globals import SCOPE
 
 
+# TODO restore cache
 def get_spotify_client(session=None):
     load_dotenv()
     cache_handler = (

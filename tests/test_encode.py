@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import numpy as np
 
 from sentence_transformers import SentenceTransformer
@@ -31,7 +33,7 @@ def get_native_embeddings(genres):
 
 def test_encode_genres(genres):
     native_embeddings = get_native_embeddings(genres)
-    onnx_embeddings = encode_genres(genres)
+    onnx_embeddings = encode_genres(SimpleNamespace(genres=genres))
 
     results = {}
     for genre, _ in genres:
