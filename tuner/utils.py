@@ -22,28 +22,28 @@ def get_spotify_client(session=None):
     )
 
 
-def display_match(match, shared_genres, shared_artists, recommended_artists):
-    if not match:
+def display_match(output):
+    if not output:
         print("No matches found, check back later when more users use Tuner.")
 
-    match_display_name = match.display_name
-    match_url = match.url
+    match_display_name = output.match_md.display_name
+    match_url = output.match_md.url
 
     print(f"Match found: '{match_display_name}'")
     print("")
     print("You have a shared interest in the following genres:")
-    for g in shared_genres:
+    for g in output.shared_genres:
         print(f"- {g}")
     print("")
 
-    if shared_artists:
+    if output.shared_artists:
         print("You both enjoy the following artists:")
-        for a in list(shared_artists)[:3]:
+        for a in output.shared_artists[:3]:
             print(f"- {a}")
         print("")
 
     print(f"'{match_display_name}' also enjoys the following artists:")
-    for a in recommended_artists[:6]:
+    for a in output.recommended_artists[:6]:
         print(f"- {a}")
     print("")
 

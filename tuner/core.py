@@ -3,6 +3,7 @@ import logging
 from tuner.encode import get_genre_vec
 from tuner.db import (
     TunerMetadata,
+    TunerOutput,
     get_pinecone_index,
     upload_genre_vector,
     search_for_matches,
@@ -41,8 +42,6 @@ def tuner_match(session=None):
 
     logger.info("Printing result")
     score, match_metadata = select_match(matches)
-    shared_genres, shared_artists, recommended_artists = match_metadata.overlap(
-        user_metadata
-    )
+    output = TunerOutput(match_metadata, user_metadata)
 
-    return match_metadata, shared_genres, shared_artists, recommended_artists
+    return output

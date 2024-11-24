@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Main entrypoint for Tuner."""
-    display_match(*tuner_match())
+    display_match(tuner_match())
     logging.info("Done!")
     return 0
 

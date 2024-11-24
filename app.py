@@ -1,5 +1,6 @@
 import logging
 import os
+from dataclasses import asdict
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, session
@@ -37,12 +38,7 @@ def results():
             session["recommended_artists"],
         )
     else:
-        (
-            match,
-            shared_genres,
-            shared_artists,
-            recommended_artists,
-        ) = tuner_match(session)
+        output = tuner_match(session)
 
         (
             session["match"],
@@ -50,10 +46,10 @@ def results():
             session["shared_artists"],
             session["recommended_artists"],
         ) = (
-            match,
-            list(shared_genres),
-            list(shared_artists),
-            list(recommended_artists),
+            asdict(output.match_md),
+            output.shared_genres,
+            output.shared_artists,
+            output.recommended_artists,
         )
 
     return render_template(

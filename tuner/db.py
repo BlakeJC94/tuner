@@ -34,11 +34,18 @@ class TunerMetadata:
             match_genres[genre] = int(count)
         return match_genres
 
-    def overlap(self, other):
-        genre_counts = self.genre_counts
+
+@dataclass
+class TunerOutput:
+    match_md: TunerMetadata
+    user_md: TunerMetadata
+
+    @property
+    def shared_genres(self) -> list[str]:
+        genre_counts = self.match_md.genre_counts
         genre_counts_total = sum(genre_counts.values())
 
-        other_genre_counts = other.genre_counts
+        other_genre_counts = self.user_md.genre_counts
         other_genre_counts_total = sum(other_genre_counts.values())
 
         common_genres = set(genre_counts.keys()).intersection(other_genre_counts.keys())
@@ -51,11 +58,15 @@ class TunerMetadata:
             shared_scores_genres.append((score, g))
 
         shared_scores_genres = sorted(shared_scores_genres, key=lambda x: -x[0])
-        shared_genres = [g for _, g in shared_scores_genres]
+        return [g for _, g in shared_scores_genres]
 
-        shared_artists = list(set(self.artists).intersection(set(other.artists)))
-        recommended_artists = [a for a in self.artists if a not in shared_artists]
-        return shared_genres, shared_artists, recommended_artists
+    @property
+    def shared_artists(self) -> list[str]:
+        return list(set(self.match_md.artists).intersection(set(self.user_md.artists)))
+
+    @property
+    def recommended_artists(self) -> list[str]:
+        return [a for a in self.match_md.artists if a not in self.shared_artists]
 
 
 def get_pinecone_index():
