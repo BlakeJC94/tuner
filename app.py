@@ -32,6 +32,21 @@ def results():
         image_urls = [u for u in output.image_urls if u]
         image_urls = random.sample(image_urls, min(6, len(image_urls)))
 
+        tracks = []
+        for r in output.tracks:
+            imgs = r["album"]["images"]
+            img_url = next((i["url"] for i in imgs if i["width"] == 64), None)
+            if img_url is None:
+                continue
+            tracks.append(
+                {
+                    "name": r["name"],
+                    "album": r["album"]["name"],
+                    "artists": ", ".join([a["name"] for a in r["artists"]]),
+                    "image_url": img_url,
+                }
+            )
+
         session["result"] = {
             "name": output.match_md.display_name,
             "score": f"{100 * output.score:.2f}",
@@ -40,6 +55,7 @@ def results():
             "common_artists": output.shared_artists[:6],
             "recommended_artists": output.recommended_artists[:6],
             "image_urls": image_urls,
+            "tracks": tracks,
         }
 
     return render_template("results.html", match=session["result"])

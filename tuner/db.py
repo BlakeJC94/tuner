@@ -42,6 +42,7 @@ class TunerOutput:
     user_md: TunerMetadata
     score: float
     image_urls: list = None
+    tracks: list = None
 
     @property
     def shared_genres(self) -> list[str]:
@@ -76,7 +77,9 @@ class TunerOutput:
         shared_artist_ids = list(
             set(self.match_md.artist_ids).intersection(set(self.user_md.artist_ids))
         )
-        recommended_artist_ids = [a for a in self.match_md.artist_ids if a not in shared_artist_ids]
+        recommended_artist_ids = [
+            a for a in self.match_md.artist_ids if a not in shared_artist_ids
+        ]
         return list(set([*shared_artist_ids, *recommended_artist_ids]))
 
     def load_image_urls(self, sp, dim=160):
@@ -87,6 +90,8 @@ class TunerOutput:
             image_urls.append(image_url)
         self.image_urls = image_urls
 
+    def load_tracks(self, sp):
+        self.tracks = sp.recommendations(seed_artists=self.artist_ids)["tracks"]
 
 
 def get_pinecone_index():
@@ -106,7 +111,9 @@ def upload_genre_vector(index, db_metadata, genre_vec):
     )
 
 
-def search_for_matches(index, db_metadata, genre_vec) -> list[tuple[float, TunerMetadata]]:
+def search_for_matches(
+    index, db_metadata, genre_vec
+) -> list[tuple[float, TunerMetadata]]:
     matches = (
         index.query(
             vector=genre_vec,
@@ -118,7 +125,9 @@ def search_for_matches(index, db_metadata, genre_vec) -> list[tuple[float, Tuner
         .get("matches", [])
     )
     matches = [
-        (m["score"], TunerMetadata(**m["metadata"])) for m in matches if m["id"] != db_metadata.id
+        (m["score"], TunerMetadata(**m["metadata"]))
+        for m in matches
+        if m["id"] != db_metadata.id
     ]
     return sorted(matches, key=lambda x: -x[0])
 

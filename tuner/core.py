@@ -46,5 +46,6 @@ def tuner_match(session=None):
 
     if session is not None:
         output.load_image_urls(sp, dim=160)
+        output.load_tracks(sp)
 
     return output

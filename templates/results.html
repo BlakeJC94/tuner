@@ -60,7 +60,31 @@
             </ul>
         </div>
         {% endif %}
+
+        <!-- Playlist suggestion -->
+        <h2>Spotify Playlist</h2>
+        <table class="playlist-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Track</th>
+                    <th>Artist</th>
+                    <th>Album</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for track in match.tracks %}
+                <tr>
+                    <td><img src="{{ track.image_url }}" alt="{{ track.name }} cover" class="track-image"></td>
+                    <td>{{ track.name }}</td>
+                    <td>{{ track.artists }}</td>
+                    <td>{{ track.album }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    <a href="{{ url_for('results') }}" class="cta-button-large">Add playlist to Spotify</a>
 </section>
 <section class="center-justify">
     <div class="donation-section">
