@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import MemoryCacheHandler, FlaskSessionCacheHandler
 
-from tuner.globals import SCOPE
+from tuner.globals import SCOPE, GENRES_PATH
 
 
 # TODO restore cache
@@ -21,6 +21,12 @@ def get_spotify_client(session=None):
             # cache_handler=cache_handler,
         ),
     )
+
+
+def get_all_genres():
+    with open(GENRES_PATH, "r") as f:
+        genres = [g.strip().lower() for g in f.read().split("\n")]
+    return genres
 
 
 def display_match(output):

@@ -4,6 +4,8 @@ SCOPE = [
 ]
 
 ONNX_PATH = "./data/artifacts/model.onnx"
+GENRES_PATH = "./data/genres.txt"
+NPY_PATH = "./data/embeddings.npy"
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 MODEL_REPO = "sentence-transformers"
