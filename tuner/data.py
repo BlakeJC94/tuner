@@ -15,8 +15,7 @@ class TunerData:
     def artists(self) -> list[str]:
         artists = []
         for idx, item in enumerate(self.user_top_artists["items"]):
-            artist = item["name"]
-            artists.append(artist)
+            artists.append((item["name"], item["id"]))
         return artists
 
     @property

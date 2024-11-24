@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from dataclasses import asdict
 
 from dotenv import load_dotenv
@@ -25,45 +26,25 @@ def home():
 
 @app.route("/results")
 def results():
-    if "match" in session:
-        (
-            match,
-            shared_genres,
-            shared_artists,
-            recommended_artists,
-        ) = (
-            session["match"],
-            session["shared_genres"],
-            session["shared_artists"],
-            session["recommended_artists"],
-        )
-    else:
+    if not "result" in session:
         output = tuner_match(session)
 
-        (
-            session["match"],
-            session["shared_genres"],
-            session["shared_artists"],
-            session["recommended_artists"],
-        ) = (
-            asdict(output.match_md),
-            output.shared_genres,
-            output.shared_artists,
-            output.recommended_artists,
-        )
+        image_urls = [u for u in output.image_urls if u]
+        image_urls = random.sample(image_urls, min(6, len(image_urls)))
 
-    return render_template(
-        "results.html",
-        match={
-            "name": session["match"]["metadata"]["display_name"],
-            "score": session["match"]["score"],
-            "profile_link": session["match"]["metadata"]["url"],
-            "common_genres": session["shared_genres"],
-            "common_artists": session["shared_artists"],
-            "recommended_artists": session["recommended_artists"],
-        },
-    )
+        session["result"] = {
+            "name": output.match_md.display_name,
+            "score": f"{100 * output.score:.2f}",
+            "profile_link": output.match_md.url,
+            "common_genres": output.shared_genres[:6],
+            "common_artists": output.shared_artists[:6],
+            "recommended_artists": output.recommended_artists[:6],
+            "image_urls": image_urls,
+        }
+
+    return render_template("results.html", match=session["result"])
 
 
+# TODO Remove debug mode
 if __name__ == "__main__":
     app.run(debug=True)

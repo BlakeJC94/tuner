@@ -4,10 +4,10 @@
 
 {% block content %}
 
+<style>
+</style>
 <section class="center-justify">
-    <!-- <img width="270px" src="{{ url_for('static', filename='img/logo_640.svg') }}"> -->
     <h1>Your Music Match</h1>
-    <!-- <a href="{{ url_for('results') }}" class="cta-button-large">Launch Tuner</a> -->
 </section>
 <section class="center-justify">
     <div class="container">
@@ -16,8 +16,18 @@
             <h2>
                 You matched with
                 <a href="{{ match.profile_link }}" class="profile-link">{{ match.name }}</a>
+                ({{ match.score }}%)
             </h2>
         </section>
+
+        <!-- Images Section -->
+        <div class="image-gallery">
+            {% for url in match.image_urls %}
+            <div class="image-container">
+                <img src="{{ url }}" alt="Related Image" />
+            </div>
+            {% endfor %}
+        </div>
 
         <!-- Common Genres Section -->
         <div class="section">
@@ -40,6 +50,7 @@
         </div>
 
         <!-- Recommended Artists Section -->
+        {% if match.recommended_artists %}
         <div class="section">
             <h2>Artists You May Like</h2>
             <ul>
@@ -48,6 +59,7 @@
                 {% endfor %}
             </ul>
         </div>
+        {% endif %}
     </div>
 </section>
 <section class="center-justify">
