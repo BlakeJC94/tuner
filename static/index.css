@@ -296,6 +296,29 @@ input[type="email"] {
     background-color: #212121;
 }
 
+/* post button */
+.btn {
+    background-color: #1DB954;
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.btn:hover {
+    background-color: #25904C;
+}
+
+.btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
 /* General Mobile Responsiveness */
 @media (max-width: 600px) {
     body {

@@ -1,5 +1,6 @@
 SCOPE = [
     "user-top-read",
+    "playlist-modify-public",
     # "user-read-recently-played",  # Is there a way to use this?
 ]
 

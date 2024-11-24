@@ -4,8 +4,6 @@
 
 {% block content %}
 
-<style>
-</style>
 <section class="center-justify">
     <h1>Your Music Match</h1>
 </section>
@@ -63,6 +61,11 @@
 
         <!-- Playlist suggestion -->
         <h2>Spotify Playlist</h2>
+        {% if match.playlist_data %}
+        <p style="text-align: center;">
+            Playlist created: <a href="{{ match.playlist_data.external_url }}">{{ match.playlist_data.name }}</a>
+        </p>
+        {% else %}
         <table class="playlist-table">
             <thead>
                 <tr>
@@ -84,7 +87,11 @@
             </tbody>
         </table>
     </div>
-    <a href="{{ url_for('results') }}" class="cta-button-large">Add playlist to Spotify</a>
+    {% if not match.playlist_data %}
+    <form action="/results" method="POST">
+        <button type="submit" class="btn">Add playlist to Spotify</button>
+    </form>
+    {% endif %}
 </section>
 <section class="center-justify">
     <div class="donation-section">

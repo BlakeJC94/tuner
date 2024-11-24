@@ -4,9 +4,10 @@ import random
 from dataclasses import asdict
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request
 
 from tuner.core import tuner_match
+from tuner.utils import get_spotify_client
 
 load_dotenv()
 
@@ -24,8 +25,10 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/results")
+# TODO break up cookie
+@app.route("/results", methods=["GET", "POST"])
 def results():
+
     if not "result" in session:
         output = tuner_match(session)
 
@@ -44,10 +47,13 @@ def results():
                     "album": r["album"]["name"],
                     "artists": ", ".join([a["name"] for a in r["artists"]]),
                     "image_url": img_url,
+                    "uri": r["uri"],
+                    "preview_url": r["preview_url"],
                 }
             )
 
         session["result"] = {
+            "user_id": output.user_md.id,
             "name": output.match_md.display_name,
             "score": f"{100 * output.score:.2f}",
             "profile_link": output.match_md.url,
@@ -56,7 +62,46 @@ def results():
             "recommended_artists": output.recommended_artists[:6],
             "image_urls": image_urls,
             "tracks": tracks,
+            "playlist_data": None,
         }
+
+    if request.method == "POST" and not session["result"]["playlist_data"]:
+        sp = get_spotify_client(session)
+        user = session["result"]["user_id"].split(":")[-1]
+        name = f"Tuner - {session['result']['name']}"
+        if not "test" in name:
+            matching_playlists = []
+            playlists = sp.user_playlists(user)
+            while playlists:
+                for i, playlist in enumerate(playlists['items']):
+                    if playlist["name"].startswith(name):
+                        matching_playlists.append(playlist['name'])
+                if playlists['next']:
+                    playlists = sp.next(playlists)
+                else:
+                    playlists = None
+
+            n_matching = len(matching_playlists)
+            if n_matching > 0:
+                name = f"{name} ({n_matching+1})"
+
+            playlist = sp.user_playlist_create(
+                user,
+                name,
+                public=True,
+                collaborative=False,
+                description="Suggested playlist from Tuner",
+            )
+            sp.user_playlist_add_tracks(
+                user,
+                playlist["id"],
+                [t["uri"] for t in session["result"]["tracks"]],
+            )
+            playlist_data = {
+                "name": name,
+                "external_url": playlist["external_urls"]["spotify"],
+            }
+            session["result"]["playlist_data"] = playlist_data
 
     return render_template("results.html", match=session["result"])
 
