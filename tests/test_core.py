@@ -23,9 +23,7 @@ def mock_data():
         "A": {
             "user": {
                 "display_name": "A",
-                "external_urls": {
-                    "spotify": "https://test.open.spotify.com/user/A"
-                },
+                "external_urls": {"spotify": "https://test.open.spotify.com/user/A"},
                 "followers": {"href": None, "total": 3},
                 "href": "https://test.api.spotify.com/v1/users/A",
                 "id": "A",
@@ -109,6 +107,36 @@ def mock_data():
                         "type": "artist",
                         "uri": "spotify:artist:6RZUqkomCmb8zCRqc9eznB",
                     },
+                    {
+                        "external_urls": {
+                            "spotify": "https://open.spotify.com/artist/4skJp5OKvcc9eKokiuhi2s"
+                        },
+                        "followers": {"href": None, "total": 340905},
+                        "genres": ["neo-psychedelic"],
+                        "href": "https://api.spotify.com/v1/artists/4skJp5OKvcc9eKokiuhi2s",
+                        "id": "4skJp5OKvcc9eKokiuhi2s",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000e5ebfeacc4fe5eb5046f077a998e",
+                                "height": 640,
+                                "width": 640,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616100005174feacc4fe5eb5046f077a998e",
+                                "height": 320,
+                                "width": 320,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000f178feacc4fe5eb5046f077a998e",
+                                "height": 160,
+                                "width": 160,
+                            },
+                        ],
+                        "name": "Pond",
+                        "popularity": 49,
+                        "type": "artist",
+                        "uri": "spotify:artist:4skJp5OKvcc9eKokiuhi2s",
+                    },
                 ],
                 "total": 187,
                 "limit": 20,
@@ -121,9 +149,7 @@ def mock_data():
         "B": {
             "user": {
                 "display_name": "B",
-                "external_urls": {
-                    "spotify": "https://test.open.spotify.com/user/B"
-                },
+                "external_urls": {"spotify": "https://test.open.spotify.com/user/B"},
                 "followers": {"href": None, "total": 3},
                 "href": "https://test.api.spotify.com/v1/users/B",
                 "id": "B",
@@ -237,6 +263,70 @@ def mock_data():
                         "type": "artist",
                         "uri": "spotify:artist:6nxWCVXbOlEVRexSbLsTer",
                     },
+                    {
+                        "external_urls": {
+                            "spotify": "https://open.spotify.com/artist/72tRiBHei5G9M8it4h4sfC"
+                        },
+                        "followers": {"href": None, "total": 234465},
+                        "genres": [
+                            "alternative hip hop",
+                            "instrumental hip hop",
+                            "sudanese pop",
+                        ],
+                        "href": "https://api.spotify.com/v1/artists/72tRiBHei5G9M8it4h4sfC",
+                        "id": "72tRiBHei5G9M8it4h4sfC",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000e5eb7107fa871c65e7abbff237d6",
+                                "height": 640,
+                                "width": 640,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab676161000051747107fa871c65e7abbff237d6",
+                                "height": 320,
+                                "width": 320,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000f1787107fa871c65e7abbff237d6",
+                                "height": 160,
+                                "width": 160,
+                            },
+                        ],
+                        "name": "Oddisee",
+                        "popularity": 45,
+                        "type": "artist",
+                        "uri": "spotify:artist:72tRiBHei5G9M8it4h4sfC",
+                    },
+                    {
+                        "external_urls": {
+                            "spotify": "https://open.spotify.com/artist/4V8LLVI7PbaPR0K2TGSxFF"
+                        },
+                        "followers": {"href": None, "total": 17850183},
+                        "genres": ["hip hop", "rap"],
+                        "href": "https://api.spotify.com/v1/artists/4V8LLVI7PbaPR0K2TGSxFF",
+                        "id": "4V8LLVI7PbaPR0K2TGSxFF",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000e5ebdfa2b0c7544a772042a12e52",
+                                "height": 640,
+                                "width": 640,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616100005174dfa2b0c7544a772042a12e52",
+                                "height": 320,
+                                "width": 320,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000f178dfa2b0c7544a772042a12e52",
+                                "height": 160,
+                                "width": 160,
+                            },
+                        ],
+                        "name": "Tyler, The Creator",
+                        "popularity": 95,
+                        "type": "artist",
+                        "uri": "spotify:artist:4V8LLVI7PbaPR0K2TGSxFF",
+                    },
                 ],
                 "total": 187,
                 "limit": 20,
@@ -249,9 +339,7 @@ def mock_data():
         "C": {
             "user": {
                 "display_name": "C",
-                "external_urls": {
-                    "spotify": "https://test.open.spotify.com/user/C"
-                },
+                "external_urls": {"spotify": "https://test.open.spotify.com/user/C"},
                 "followers": {"href": None, "total": 3},
                 "href": "https://test.api.spotify.com/v1/users/C",
                 "id": "C",
@@ -297,6 +385,48 @@ def mock_data():
                         "type": "artist",
                         "uri": "spotify:artist:67hb7towEyKvt5Z8Bx306c",
                     },
+                    {
+                        "external_urls": {
+                            "spotify": "https://open.spotify.com/artist/2d0hyoQ5ynDBnkvAbJKORj"
+                        },
+                        "followers": {"href": None, "total": 6268457},
+                        "genres": [
+                            "alternative metal",
+                            "alternative rock",
+                            "conscious hip hop",
+                            "funk metal",
+                            "hard rock",
+                            "nu metal",
+                            "political hip hop",
+                            "post-grunge",
+                            "rap metal",
+                            "rap rock",
+                            "rock",
+                        ],
+                        "href": "https://api.spotify.com/v1/artists/2d0hyoQ5ynDBnkvAbJKORj",
+                        "id": "2d0hyoQ5ynDBnkvAbJKORj",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000e5ebda4bd2b213cae330e2a4a901",
+                                "height": 640,
+                                "width": 640,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616100005174da4bd2b213cae330e2a4a901",
+                                "height": 320,
+                                "width": 320,
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab6761610000f178da4bd2b213cae330e2a4a901",
+                                "height": 160,
+                                "width": 160,
+                            },
+                        ],
+                        "name": "Rage Against The Machine",
+                        "popularity": 73,
+                        "type": "artist",
+                        "uri": "spotify:artist:2d0hyoQ5ynDBnkvAbJKORj",
+                    },
                 ],
                 "total": 187,
                 "limit": 20,
@@ -312,7 +442,12 @@ def mock_data():
 @pytest.mark.parametrize("user_id", ["A", "B", "C"])
 @patch.object(spotipy.Spotify, "current_user_top_artists")
 @patch.object(spotipy.Spotify, "current_user")
-def test_tuner_match(mock_current_user, mock_current_user_top_artists, user_id, mock_data):
+def test_tuner_match(
+    mock_current_user,
+    mock_current_user_top_artists,
+    user_id,
+    mock_data,
+):
     mock_current_user.return_value = mock_data[user_id]["user"]
     mock_current_user_top_artists.return_value = mock_data[user_id]["user_top_artists"]
     output = tuner_match()
