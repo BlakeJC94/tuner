@@ -8,17 +8,14 @@ certifi==2024.8.30
 charset-normalizer==3.4.0
 click==8.1.7
 colorama==0.4.6 ; sys_platform == 'win32' or platform_system == 'Windows'
-coloredlogs==15.0.1
 decorator==5.1.1
 executing==2.1.0
 filelock==3.16.1
 flask==3.1.0
-flatbuffers==24.3.25
 fsspec==2024.10.0
 googleapis-common-protos==1.66.0
 grpcio==1.67.1 ; python_full_version < '4.0'
 huggingface-hub==0.26.2
-humanfriendly==10.0
 idna==3.10
 iniconfig==2.0.0
 ipython==8.29.0
@@ -44,8 +41,6 @@ nvidia-cusparse-cu12==12.3.1.170 ; platform_machine == 'x86_64' and platform_sys
 nvidia-nccl-cu12==2.21.5 ; platform_machine == 'x86_64' and platform_system == 'Linux'
 nvidia-nvjitlink-cu12==12.4.127 ; platform_machine == 'x86_64' and platform_system == 'Linux'
 nvidia-nvtx-cu12==12.4.127 ; platform_machine == 'x86_64' and platform_system == 'Linux'
-onnx==1.17.0
-onnxruntime==1.20.0
 packaging==24.2
 parso==0.8.4
 pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
@@ -60,7 +55,6 @@ protoc-gen-openapiv2==0.0.1
 ptyprocess==0.7.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
 pure-eval==0.2.3
 pygments==2.18.0
-pyreadline3==3.5.4 ; sys_platform == 'win32'
 pytest==8.3.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
