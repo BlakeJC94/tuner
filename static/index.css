@@ -267,14 +267,26 @@ input[type="email"] {
 /* Playlist table */
 .playlist-table {
     width: 100%;
-    border-collapse: collapse;
-    border-radius: 5px;
+    border-spacing: 0;
+    overflow: hidden;
+    border-collapse: separate;
     margin-top: 20px;
+}
+.playlist-table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+.playlist-table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+.playlist-table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.playlist-table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
 }
 .playlist-table th, .playlist-table td {
     text-align: left;
     padding: 10px;
-    border-radius: 5px;
     border: 1px solid #1db954;
 }
 .playlist-table th {
@@ -294,6 +306,23 @@ input[type="email"] {
 .playlist-table td {
     vertical-align: middle;
     background-color: #212121;
+}
+.preview-btn {
+    padding: 5px 10px;
+    background-color: #1DB954;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+.preview-btn:hover {
+    background-color: #1ed760;
+}
+.preview-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
 }
 
 /* post button */

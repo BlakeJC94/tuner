@@ -25,7 +25,6 @@ def home():
     return render_template("home.html")
 
 
-# TODO break up cookie
 @app.route("/results", methods=["GET", "POST"])
 def results():
 

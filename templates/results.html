@@ -4,6 +4,45 @@
 
 {% block content %}
 
+<script>
+    let currentAudio = null;
+    let currentButton = null;
+
+    function playPreview(url, button) {
+        // If the same button is clicked, toggle playback
+        if (currentAudio && currentButton === button) {
+            if (currentAudio.paused) {
+                currentAudio.play();
+                button.textContent = "⏸";
+            } else {
+                currentAudio.pause();
+                button.textContent = "⏵";
+            }
+            return;
+        }
+
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentButton.textContent = "⏵"; // Reset the previous button text
+        }
+
+        // Create a new audio object and play it
+        currentAudio = new Audio(url);
+        currentAudio.play();
+
+        // Update the button text and state
+        currentButton = button;
+        button.textContent = "⏸";
+
+        // Reset button text when playback ends
+        currentAudio.onended = () => {
+            button.textContent = "⏵";
+            currentAudio = null;
+            currentButton = null;
+        };
+    }
+</script>
 <section class="center-justify">
     <h1>Your Music Match</h1>
 </section>
@@ -69,6 +108,7 @@
         <table class="playlist-table">
             <thead>
                 <tr>
+                    <th>Preview</th>
                     <th>Image</th>
                     <th>Track</th>
                     <th>Artist</th>
@@ -78,6 +118,12 @@
             <tbody>
                 {% for track in match.tracks %}
                 <tr>
+                    <td style="vertical-align: middle;text-align: center;">
+                        <button class="preview-btn" onclick="playPreview('{{ track.preview_url }}', this)"
+                            {% if not track.preview_url %}disabled{% endif %}>
+                            ⏵
+                        </button>
+                    </td>
                     <td><img src="{{ track.image_url }}" alt="{{ track.name }} cover" class="track-image"></td>
                     <td>{{ track.name }}</td>
                     <td>{{ track.artists }}</td>

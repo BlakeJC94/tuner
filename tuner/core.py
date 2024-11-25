@@ -38,7 +38,7 @@ def tuner_match(session=None):
 
     if not matches:
         logger.warning("No matches found")
-        return None, [], [], []
+        return None
 
     logger.info("Printing result")
     score, match_metadata = select_match(matches)
