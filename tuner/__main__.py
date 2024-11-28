@@ -1,9 +1,15 @@
 import argparse
 import logging
 
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+from spotipy.cache_handler import MemoryCacheHandler
+from dotenv import load_dotenv
+
 from tuner.core import tuner_match
 from tuner.embeddings.compile import compile_embeddings
 from tuner.utils import display_match
+from tuner.globals import SCOPE
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -19,7 +25,18 @@ def main():
         compile_embeddings()
         return 0
 
-    display_match(tuner_match())
+    logger.info("Logging into Spotify")
+    load_dotenv()
+    cache_handler = MemoryCacheHandler()
+    sp = spotipy.Spotify(
+        auth_manager=SpotifyOAuth(
+            scope=SCOPE,
+            show_dialog=True,
+            cache_handler=cache_handler,
+        ),
+    )
+
+    display_match(tuner_match(sp))
     logging.info("Done!")
     return 0
 

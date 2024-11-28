@@ -10,16 +10,11 @@ from tuner.db import (
     select_match,
 )
 from tuner.data import get_data
-from tuner.utils import get_spotify_client
 
 logger = logging.getLogger(__name__)
 
 
-def tuner_match(session=None):
-    logger.info("Logging into Spotify")
-    sp = get_spotify_client(session)
-
-    # Get data
+def tuner_match(sp):
     user_data = get_data(sp)
 
     # Get genre embeddings
@@ -43,9 +38,5 @@ def tuner_match(session=None):
     logger.info("Printing result")
     score, match_metadata = select_match(matches)
     output = TunerOutput(match_metadata, user_metadata, score)
-
-    if session is not None:
-        output.load_image_urls(sp, dim=160)
-        output.load_tracks(sp)
 
     return output

@@ -1,25 +1,4 @@
-import spotipy
-from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.cache_handler import MemoryCacheHandler, FlaskSessionCacheHandler
-
-from tuner.globals import SCOPE, GENRES_PATH
-
-
-def get_spotify_client(session=None):
-    load_dotenv()
-    cache_handler = (
-        FlaskSessionCacheHandler(session)
-        if session is not None
-        else MemoryCacheHandler()
-    )
-    return spotipy.Spotify(
-        auth_manager=SpotifyOAuth(
-            scope=SCOPE,
-            show_dialog=True,
-            cache_handler=cache_handler,
-        ),
-    )
+from tuner.globals import GENRES_PATH
 
 
 def get_all_genres():

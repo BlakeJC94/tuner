@@ -1,20 +1,20 @@
 import logging
-import os
 import random
-from dataclasses import asdict
 
+import spotipy
 from dotenv import load_dotenv
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, redirect
+from flask_session import Session
 
 from tuner.core import tuner_match
-from tuner.utils import get_spotify_client
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv(
-    "SECRET_KEY", "default_fallback_key"
-)  # Required to use session
+app.config["SECRET_KEY"] = "foobar"
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = ".flask_session/"
+Session(app)
 
 app.logger.setLevel(logging.INFO)
 
@@ -25,11 +25,43 @@ def home():
     return render_template("home.html")
 
 
+
+@app.route("/login")
+def login():
+    cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+    auth_manager = spotipy.oauth2.SpotifyOAuth(
+        scope="user-read-currently-playing playlist-modify-private",
+        cache_handler=cache_handler,
+        show_dialog=True,
+    )
+
+    if request.args.get("code"):
+        # Step 2. Being redirected from Spotify auth page
+        auth_manager.get_access_token(request.args.get("code"))
+        return redirect("/results")
+
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        # Step 1. Display sign in link when no token
+        auth_url = auth_manager.get_authorize_url()
+        return redirect(auth_url)
+
+    # Step 3. Signed in, display data
+    return redirect("/results")
+
+
 @app.route("/results", methods=["GET", "POST"])
 def results():
-
     if not "result" in session:
-        output = tuner_match(session)
+        cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+        if not auth_manager.validate_token(cache_handler.get_cached_token()):
+            return redirect('/')
+
+        sp = spotipy.Spotify(auth_manager=auth_manager)
+        output = tuner_match(sp)
+
+        output.load_image_urls(sp, dim=160)  # TODO rfc
+        output.load_tracks(sp)
 
         image_urls = [u for u in output.image_urls if u]
         image_urls = random.sample(image_urls, min(6, len(image_urls)))
@@ -72,10 +104,10 @@ def results():
             matching_playlists = []
             playlists = sp.user_playlists(user)
             while playlists:
-                for i, playlist in enumerate(playlists['items']):
+                for i, playlist in enumerate(playlists["items"]):
                     if playlist["name"].startswith(name):
-                        matching_playlists.append(playlist['name'])
-                if playlists['next']:
+                        matching_playlists.append(playlist["name"])
+                if playlists["next"]:
                     playlists = sp.next(playlists)
                 else:
                     playlists = None
@@ -107,4 +139,4 @@ def results():
 
 # TODO Remove debug mode
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=False, port=5000)
