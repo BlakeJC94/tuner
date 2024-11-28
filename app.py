@@ -25,7 +25,6 @@ def home():
     return render_template("home.html")
 
 
-
 @app.route("/login")
 def login():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -51,23 +50,28 @@ def login():
 
 @app.route("/results", methods=["GET", "POST"])
 def results():
-    if not "result" in session:
-        cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
-        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
-        if not auth_manager.validate_token(cache_handler.get_cached_token()):
-            return redirect('/')
+    cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return redirect("/")
 
-        sp = spotipy.Spotify(auth_manager=auth_manager)
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+
+    if not "result" in session:
         output = tuner_match(sp)
 
-        output.load_image_urls(sp, dim=160)  # TODO rfc
-        output.load_tracks(sp)
-
-        image_urls = [u for u in output.image_urls if u]
+        dim = 160
+        image_urls = []
+        for a in sp.artists(output.artist_ids)["artists"]:
+            foo = [i["url"] for i in a["images"] if i["width"] == dim]
+            if not foo:
+                continue
+            image_urls.append(foo[0])
         image_urls = random.sample(image_urls, min(6, len(image_urls)))
 
         tracks = []
-        for r in output.tracks:
+        recommended_tracks = []  # TODO replace: sp.recommendations(seed_artists=output.artist_ids)["tracks"]
+        for r in recommended_tracks:
             imgs = r["album"]["images"]
             img_url = next((i["url"] for i in imgs if i["width"] == 64), None)
             if img_url is None:
@@ -79,7 +83,7 @@ def results():
                     "artists": ", ".join([a["name"] for a in r["artists"]]),
                     "image_url": img_url,
                     "uri": r["uri"],
-                    "preview_url": r["preview_url"],
+                    # "preview_url": r["preview_url"],  # Deprecated :(
                 }
             )
 
@@ -97,7 +101,6 @@ def results():
         }
 
     if request.method == "POST" and not session["result"]["playlist_data"]:
-        sp = get_spotify_client(session)
         user = session["result"]["user_id"].split(":")[-1]
         name = f"Tuner - {session['result']['name']}"
         if not "test" in name:

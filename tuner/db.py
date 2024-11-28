@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 from pinecone.grpc import PineconeGRPC as Pinecone
 
@@ -41,8 +41,8 @@ class TunerOutput:
     match_md: TunerMetadata
     user_md: TunerMetadata
     score: float
-    image_urls: list = None
-    tracks: list = None
+    image_urls: list = field(default_factory=list)
+    tracks: list = field(default_factory=list)
 
     @property
     def shared_genres(self) -> list[str]:
@@ -90,8 +90,8 @@ class TunerOutput:
             image_urls.append(image_url)
         self.image_urls = image_urls
 
-    def load_tracks(self, sp):
-        self.tracks = sp.recommendations(seed_artists=self.artist_ids)["tracks"]
+    # def load_tracks(self, sp):
+    #     self.tracks = sp.recommendations(seed_artists=self.artist_ids)["tracks"]
 
 
 def get_pinecone_index():
