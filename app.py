@@ -7,6 +7,7 @@ from flask import Flask, render_template, session, request, redirect
 from flask_session import Session
 
 from tuner.core import tuner_match
+from tuner.globals import SCOPE
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ def home():
 def login():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
     auth_manager = spotipy.oauth2.SpotifyOAuth(
-        scope="user-read-currently-playing playlist-modify-private",
+        scope=SCOPE,
         cache_handler=cache_handler,
         show_dialog=True,
     )
@@ -57,7 +58,7 @@ def results():
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    if not "result" in session:
+    if "result" not in session:
         output = tuner_match(sp)
 
         dim = 160
