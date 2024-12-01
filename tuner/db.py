@@ -78,6 +78,16 @@ class TunerOutput:
         recommended_artist_ids = [a for a in self.match_md.artist_ids if a not in shared_artist_ids]
         return list(set([*shared_artist_ids, *recommended_artist_ids]))
 
+    @property
+    def sp_artists(self) -> list[tuple[str, str]]:
+        match_artists = list(zip(self.match_md.artists_ids, self.match_md.artists))
+        user_artists = list(zip(self.user_md.artists_ids, self.user_md.artists))
+        shared_artists = list(
+            set(match_artists).intersection(set(user_artists))
+        )
+        recommended_artists = [a for a in match_artists if a not in shared_artists]
+        return [*shared_artists, *recommended_artists]
+
 
 def get_pinecone_index():
     pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
