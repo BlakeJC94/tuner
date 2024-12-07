@@ -90,6 +90,7 @@ def get_playlist(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
             related_artists = artist.get_similar(limit=4)
         except Exception:
             related_artists = []
+        breakpoint()
         related_artists = [r.item for r in related_artists]
 
         # Get 6 of their top songs on lastfm
