@@ -1,132 +1,15 @@
 import os
 import random
+import asyncio
+from dataclasses import dataclass
 
-from dotenv import load_dotenv
+import aiohttp
 import pylast
 import spotipy
-import requests
+from dotenv import load_dotenv
 
 from tuner.globals import SCOPE
 
-
-# %%
-def get_top_tracks(sp, artist_id: str) -> list[dict[str]]:
-    output = []
-    tracks = sp.artist_top_tracks(artist_id)["tracks"]
-    for track in tracks:
-        output.append(
-            {
-                "name": track["name"],
-                "album": track["album"]["name"],
-                "artists": ", ".join([a["name"] for a in track["artists"]]),
-                "image_url": next(
-                    (i["url"] for i in track["album"]["images"] if i["height"] == 64),
-                    None,
-                ),
-                "uri": track["uri"],
-                "preview_url": None,
-            }
-        )
-    return output
-
-
-foo, bar = artists[0]
-baz = get_top_tracks(sp, foo)
-print(baz)
-
-# %%
-# %%
-# %%
-# %%
-
-
-def get_playlist(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
-    playlist_tracks = []
-    # For each artist
-    for artist_id, artist_name in artists:
-        print(artist_name)
-        related_tracks = []  # lfm
-
-        # Select top 3 songs and Get 3 related songs for each song on lastfm
-        for track in random.sample(sp.artist_top_tracks(artist_id)["tracks"], 3):
-            try:
-                lfm_track = lfm.get_track(artist_name, track["name"])
-            except Exception:
-                continue
-            similar_tracks = [i.item for i in lfm_track.get_similar(limit=3)]
-            related_tracks.extend(similar_tracks)
-
-        # Select 4 related artists on lastfm
-        try:
-            artist = lfm.get_artist(artist_name)
-            related_artists = artist.get_similar(limit=4)
-        except Exception:
-            related_artists = []
-        related_artists = [r.item for r in related_artists]
-
-        # Get 6 of their top songs on lastfm
-        for related_artist in related_artists:
-            related_top_tracks = [
-                t.item for t in related_artist.get_top_tracks(limit=10)
-            ]
-            related_top_tracks = random.sample(related_top_tracks, 6)
-            related_tracks.extend(related_top_tracks)
-
-        # Get spotify ID for each song
-        for track in related_tracks:
-            track_name = track.title
-            artist = track.artist.name
-            results = sp.search(
-                f"track:{track_name} artist:{artist}", type="track", limit=1
-            )["tracks"]["items"]
-            if not results:
-                continue
-            result = results[0]
-            playlist_tracks.append(
-                {
-                    "name": result["name"],
-                    "album": result["album"]["name"],
-                    "artists": ", ".join([a["name"] for a in result["artists"]]),
-                    "image_url": next(
-                        (
-                            i["url"]
-                            for i in result["album"]["images"]
-                            if i["height"] == 64
-                        ),
-                        None,
-                    ),
-                    "uri": result["uri"],
-                    "preview_url": None,
-                }
-            )
-
-    # Shuffle list and select 12
-    playlist_tracks = random.sample(playlist_tracks, 12)
-
-    # Get audio sample for each
-    for track in playlist_tracks:
-        track_name, artist_name = track["name"], track["artists"]
-        query = f'track:"{track_name}" artist:"{artist_name}"'
-        response = requests.get(f"{BASE_URL}/search", params={"q": query})
-        if not response.ok:
-            continue
-        data = response.json()
-        if not data["data"]:
-            continue
-        track["preview_url"] = data["data"][0].get("preview")
-
-    return playlist_tracks
-
-
-foo = get_playlist(artists)
-
-
-################################
-# %% Asyncio and threading this mofo
-import asyncio
-import aiohttp
-from typing import Any
-from dataclasses import dataclass
 
 BASE_URL = "https://api.deezer.com"
 
@@ -176,16 +59,38 @@ class Artist:  # TODO lfm type
 
 
 # %%
-# TODO consider aiospotify.py lib if things don't work
-async def get_top_tracks(sp: spotipy.Spotify, artist_id: str) -> list[Track]:
-    def fetch_tracks():
-        output = []
-        tracks = sp.artist_top_tracks(artist_id)["tracks"]
-        for track in tracks:
-            output.append(Track.from_spotify_track(track))
-        return random.sample(output, 3)
+async def fetch_json(
+    session: aiohttp.ClientSession,
+    url: str,
+    headers: dict | None = None,
+    params: dict | None = None,
+) -> dict:
+    params = params or {}
+    headers = headers or {}
+    async with session.get(url, headers=headers, params=params) as response:
+        response.raise_for_status()
+        return await response.json()
 
-    return await asyncio.to_thread(fetch_tracks)
+
+# %%
+async def get_top_tracks(
+    session: aiohttp.ClientSession,
+    access_token: str,
+    artist_id: str,
+) -> list[Track]:
+    url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
+    data = await fetch_json(
+        session, url, headers={"Authorization": f"Bearer {access_token}"}
+    )
+    return [Track.from_spotify_track(t) for t in data["tracks"]]
+
+    # def fetch_tracks():
+    #     output = []
+    #     tracks = sp.artist_top_tracks(artist_id)["tracks"]  # FIXME
+    #     for track in tracks:
+    #         output.append(Track.from_spotify_track(track))
+    #     return output
+    # return await asyncio.to_thread(fetch_tracks)
 
 
 # %%
@@ -207,21 +112,40 @@ async def get_similar_tracks(
         ]
         return similar_tracks
 
-    return await asyncio.to_thread(fetch_similar_tracks(lfm, track))
+    return await asyncio.to_thread(fetch_similar_tracks, lfm, track)
 
 
 # %%
-async def get_spotify_match(sp: spotipy.Spotify, track: Track) -> Track:
-    def fetch_spotify_match(sp, track):
-        results = sp.search(
-            f"track:{track.name} artist:{track.artists}", type="track", limit=1
-        )["tracks"]["items"]
-        if not results:
-            return None
-        result = results[0]
-        return Track.from_spotify_track(result)
+# TODO types
+async def get_spotify_match(
+    session,
+    access_token,
+    track: Track,
+) -> Track | None:
+    url = "https://api.spotify.com/v1/search"
+    data = await fetch_json(
+        session,
+        url,
+        params={
+            "q": f"track:{track.name} artist:{track.artists}",
+            "type": "track",
+            "limit": 1,
+        },
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    if not data["tracks"]["items"]:
+        return None
+    return Track.from_spotify_track(data["tracks"]["items"][0])
 
-    return await asyncio.to_thread(fetch_spotify_match(sp, track))
+    # def fetch_spotify_match(sp, track):
+    #     results = sp.search(
+    #         f"track:{track.name} artist:{track.artists}", type="track", limit=1
+    #     )["tracks"]["items"]
+    #     if not results:
+    #         return None
+    #     result = results[0]
+    #     return Track.from_spotify_track(result)
+    # return await asyncio.to_thread(fetch_spotify_match, sp, track)
 
 
 # %%
@@ -237,7 +161,7 @@ async def get_similar_artists(
             return []
         return [Artist.from_lfm(r.item) for r in related_artists]
 
-    return await asyncio.to_thread(fetch_similar_artists(lfm, artist))
+    return await asyncio.to_thread(fetch_similar_artists, lfm, artist)
 
 
 # %%
@@ -247,7 +171,7 @@ async def get_top_tracks_lfm(lfm: pylast.LastFMNetwork, artist: Artist) -> list[
             Track.from_lfm(t.item) for t in artist.lfm_result.get_top_tracks(limit=10)
         ]
 
-    return await asyncio.to_thread(fetch_top_tracks_lfm(lfm, artist))
+    return await asyncio.to_thread(fetch_top_tracks_lfm, lfm, artist)
 
 
 # %%
@@ -258,21 +182,26 @@ async def process_artist(
     lfm: pylast.LastFMNetwork,
     artist: Artist,
 ) -> list[Track]:
-    result = dict(artist=artist.name, tracks=[])  # TODO check return type
+    print(artist.name)
+    tracks = []
 
     # Get random 3 tracks
-    top_tracks = await get_top_tracks(sp, artist.id)
+    access_token = sp.auth_manager.get_cached_token()["access_token"]
+    top_tracks = await get_top_tracks(session, access_token, artist.id)
     top_tracks = random.sample(top_tracks, 3)
-    result["tracks"].extend(top_tracks)
+    tracks.extend(top_tracks)
 
     for track in top_tracks:
         # Get similar track for each top track
         similar_tracks = await get_similar_tracks(lfm, track)
         # Match each track to Spotify
         spotify_matches = await asyncio.gather(
-            *[get_spotify_match(sp, track) for track in similar_tracks]
+            *[
+                get_spotify_match(session, access_token, track)
+                for track in similar_tracks
+            ]
         )
-        result["tracks"].extend(spotify_matches)
+        tracks.extend([t for t in spotify_matches if t is not None])
 
     # Get similar artists and top 5 tracks for each
     similar_artists = await get_similar_artists(lfm, artist)
@@ -282,18 +211,18 @@ async def process_artist(
         similar_artist_top_tracks = await get_top_tracks_lfm(lfm, similar_artist)
         spotify_matches = await asyncio.gather(
             *[
-                get_spotify_match(sp, track)
+                get_spotify_match(session, access_token, track)
                 for track in random.sample(similar_artist_top_tracks, 3)
             ]
         )
-        result["tracks"].extend(spotify_matches)
+        tracks.extend(spotify_matches)
 
-    return result
+    return tracks
 
 
 # %%
 async def main(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
-    cache_handler = spotipy.cache_handler.MemoryCacheHandler()
+    cache_handler = spotipy.cache_handler.CacheFileHandler()
     auth_manager = spotipy.oauth2.SpotifyOAuth(
         scope=SCOPE,
         cache_handler=cache_handler,
@@ -319,4 +248,3 @@ artists = [
     Artist(id="7MhMgCo0Bl0Kukl93PZbYS", name="blur"),
 ]
 foo = asyncio.run(main(artists))
-# %%
