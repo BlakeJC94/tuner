@@ -1,5 +1,7 @@
 import os
 import random
+import time
+from datetime import timedelta
 
 from dotenv import load_dotenv
 import pylast
@@ -54,9 +56,9 @@ def get_top_tracks(sp, artist_id: str) -> list[dict[str]]:
     return output
 
 
-foo, bar = artists[0]
-baz = get_top_tracks(sp, foo)
-print(baz)
+# foo, bar = artists[0]
+# baz = get_top_tracks(sp, foo)
+# print(baz)
 
 # %%
 # %%
@@ -90,7 +92,6 @@ def get_playlist(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
             related_artists = artist.get_similar(limit=4)
         except Exception:
             related_artists = []
-        breakpoint()
         related_artists = [r.item for r in related_artists]
 
         # Get 6 of their top songs on lastfm
@@ -147,4 +148,7 @@ def get_playlist(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
     return playlist_tracks
 
 
+start = time.time()
 foo = get_playlist(artists)
+dt = time.time() - start
+print(f"Time taken: {timedelta(seconds=dt)}")

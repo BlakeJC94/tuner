@@ -1,7 +1,9 @@
 import os
 import random
 import asyncio
+import time
 from dataclasses import dataclass
+from datetime import timedelta
 
 import aiohttp
 import pylast
@@ -116,10 +118,9 @@ async def get_similar_tracks(
 
 
 # %%
-# TODO types
 async def get_spotify_match(
-    session,
-    access_token,
+    session: aiohttp.ClientSession,
+    access_token: str,
     track: Track,
 ) -> Track | None:
     url = "https://api.spotify.com/v1/search"
@@ -136,16 +137,6 @@ async def get_spotify_match(
     if not data["tracks"]["items"]:
         return None
     return Track.from_spotify_track(data["tracks"]["items"][0])
-
-    # def fetch_spotify_match(sp, track):
-    #     results = sp.search(
-    #         f"track:{track.name} artist:{track.artists}", type="track", limit=1
-    #     )["tracks"]["items"]
-    #     if not results:
-    #         return None
-    #     result = results[0]
-    #     return Track.from_spotify_track(result)
-    # return await asyncio.to_thread(fetch_spotify_match, sp, track)
 
 
 # %%
@@ -175,10 +166,47 @@ async def get_top_tracks_lfm(lfm: pylast.LastFMNetwork, artist: Artist) -> list[
 
 
 # %%
+class RateLimiter:
+    def __init__(self, rate_limit, period):
+        self.rate_limit = rate_limit
+        self.period = period
+        self.semaphore = asyncio.Semaphore(rate_limit)
+        self.lock = asyncio.Lock()
+
+    async def acquire(self):
+        async with self.lock:
+            await self.semaphore.acquire()
+        asyncio.create_task(self.release())
+
+    async def release(self):
+        await asyncio.sleep(self.period)
+        self.semaphore.release()
+
+
+async def add_preview_url(
+    session: aiohttp.ClientSession,
+    access_token: str,
+    track: Track,
+    rate_limiter: RateLimiter,
+) -> Track:
+    url = f"{BASE_URL}/search"
+    await rate_limiter.acquire()
+    data = await fetch_json(
+        session,
+        url,
+        params={"q": f'track:"{track.name}" artist:"{track.artists}"'},
+    )
+    if "data" not in data or not data["data"]:
+        print("BLOOF")
+        return track
+    track.preview_url = data["data"][0].get("preview")
+
+
+# %%
 # TODO RFC to put similar artists at the top
 async def process_artist(
     session: aiohttp.ClientSession,
-    sp: spotipy.Spotify,
+    access_token: str,
     lfm: pylast.LastFMNetwork,
     artist: Artist,
 ) -> list[Track]:
@@ -186,7 +214,6 @@ async def process_artist(
     tracks = []
 
     # Get random 3 tracks
-    access_token = sp.auth_manager.get_cached_token()["access_token"]
     top_tracks = await get_top_tracks(session, access_token, artist.id)
     top_tracks = random.sample(top_tracks, 3)
     tracks.extend(top_tracks)
@@ -201,7 +228,7 @@ async def process_artist(
                 for track in similar_tracks
             ]
         )
-        tracks.extend([t for t in spotify_matches if t is not None])
+        tracks.extend(spotify_matches)
 
     # Get similar artists and top 5 tracks for each
     similar_artists = await get_similar_artists(lfm, artist)
@@ -217,26 +244,28 @@ async def process_artist(
         )
         tracks.extend(spotify_matches)
 
+    # Filter no matches and get audio sample for each
+    rate_limiter = RateLimiter(rate_limit=3, period=1)
+    tracks = await asyncio.gather(
+        *[add_preview_url(session, access_token, track, rate_limiter) for track in tracks if track is not None]
+    )
+
     return tracks
 
 
 # %%
-async def main(artists: list[tuple[str, str]]) -> list[dict[str, str]]:
-    cache_handler = spotipy.cache_handler.CacheFileHandler()
-    auth_manager = spotipy.oauth2.SpotifyOAuth(
-        scope=SCOPE,
-        cache_handler=cache_handler,
-        show_dialog=True,
-    )
-    sp = spotipy.Spotify(auth_manager=auth_manager)
-
+async def main(
+    access_token: str, artists: list[tuple[str, str]]
+) -> list[dict[str, str]]:
     lfm = pylast.LastFMNetwork(
         api_key=os.environ["LASTFM_API_KEY"],
         api_secret=os.environ["LASTFM_API_SECRET"],
     )
 
     async with aiohttp.ClientSession() as session:
-        tasks = [process_artist(session, sp, lfm, artist) for artist in artists]
+        tasks = [
+            process_artist(session, access_token, lfm, artist) for artist in artists
+        ]
         results = await asyncio.gather(*tasks)
 
     return results
@@ -247,4 +276,15 @@ artists = [
     Artist(id="3ExT45ORJ8pT516HRZbr7G", name="the living end"),
     Artist(id="7MhMgCo0Bl0Kukl93PZbYS", name="blur"),
 ]
-foo = asyncio.run(main(artists))
+cache_handler = spotipy.cache_handler.CacheFileHandler()
+auth_manager = spotipy.oauth2.SpotifyOAuth(
+    scope=SCOPE,
+    cache_handler=cache_handler,
+    show_dialog=True,
+)
+access_token = auth_manager.get_cached_token()["access_token"]
+
+start = time.time()
+foo = asyncio.run(main(access_token, artists))
+dt = time.time() - start
+print(f"Time taken: {timedelta(seconds=dt)}")
