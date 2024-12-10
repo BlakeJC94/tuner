@@ -1,21 +1,12 @@
 import os
 import random
 import asyncio
-import time
 from dataclasses import dataclass
-from datetime import timedelta
 
 import aiohttp
 import pylast
-import spotipy
-from dotenv import load_dotenv
 
-from tuner.globals import SCOPE
-
-
-BASE_URL = "https://api.deezer.com"
-
-load_dotenv()
+from tuner.db import Artist
 
 
 @dataclass
@@ -47,17 +38,6 @@ class Track:
             name=track.title,
             artists=track.artist.name,
         )
-
-
-@dataclass
-class Artist:
-    name: str
-    id: str | None = None
-    lfm_result: pylast.Artist | None = None
-
-    @classmethod
-    def from_lfm(cls, result: pylast.Artist):
-        return cls(name=result.name, lfm_result=result)
 
 
 # %%
@@ -181,7 +161,7 @@ async def add_preview_url(
     track: Track,
     rate_limiter: RateLimiter,
 ) -> Track:
-    url = f"{BASE_URL}/search"
+    url = "https://api.deezer.com/search"
     await rate_limiter.acquire()
     data = await fetch_json(
         session,
@@ -261,23 +241,4 @@ async def get_playlist(access_token: str, artists: list[Artist]) -> list[Track]:
         ]
         results = await asyncio.gather(*tasks)
 
-    return [t for r in results for t in r]
-
-
-artists = [
-    Artist(id="2d0hyoQ5ynDBnkvAbJKORj", name="rage against the machine"),
-    Artist(id="3ExT45ORJ8pT516HRZbr7G", name="the living end"),
-    Artist(id="7MhMgCo0Bl0Kukl93PZbYS", name="blur"),
-]
-cache_handler = spotipy.cache_handler.CacheFileHandler()
-auth_manager = spotipy.oauth2.SpotifyOAuth(
-    scope=SCOPE,
-    cache_handler=cache_handler,
-    show_dialog=True,
-)
-access_token = auth_manager.get_cached_token()["access_token"]
-
-start = time.time()
-foo = asyncio.run(get_playlist(access_token, artists))
-dt = time.time() - start
-print(f"Time taken: {timedelta(seconds=dt)}")
+    return [t for r in results for t in r if t is not None]

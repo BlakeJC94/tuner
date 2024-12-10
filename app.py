@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import random
+from dataclasses import asdict
 
 import spotipy
 from dotenv import load_dotenv
@@ -7,6 +9,7 @@ from flask import Flask, render_template, session, request, redirect
 from flask_session import Session
 
 from tuner.core import tuner_match
+from tuner.playlist import get_playlist
 from tuner.globals import SCOPE
 
 load_dotenv()
@@ -37,7 +40,7 @@ def login():
 
     if request.args.get("code"):
         # Step 2. Being redirected from Spotify auth page
-        auth_manager.get_access_token(request.args.get("code"))
+        auth_manager.get_access_token(request.args.get("code"), as_dict=False)
         return redirect("/results")
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
@@ -70,23 +73,10 @@ def results():
             image_urls.append(foo[0])
         image_urls = random.sample(image_urls, min(6, len(image_urls)))
 
-        tracks = []
-        recommended_tracks = []  # TODO replace: sp.recommendations(seed_artists=output.artist_ids)["tracks"]
-        for r in recommended_tracks:
-            imgs = r["album"]["images"]
-            img_url = next((i["url"] for i in imgs if i["width"] == 64), None)
-            if img_url is None:
-                continue
-            tracks.append(
-                {
-                    "name": r["name"],
-                    "album": r["album"]["name"],
-                    "artists": ", ".join([a["name"] for a in r["artists"]]),
-                    "image_url": img_url,
-                    "uri": r["uri"],
-                    # "preview_url": r["preview_url"],  # Deprecated :(
-                }
-            )
+        access_token = auth_manager.get_cached_token()["access_token"]
+        artists = output.sp_artists
+        tracks = asyncio.run(get_playlist(access_token, artists))
+        tracks = [asdict(t) for t in tracks]
 
         session["result"] = {
             "user_id": output.user_md.id,
@@ -104,7 +94,7 @@ def results():
     if request.method == "POST" and not session["result"]["playlist_data"]:
         user = session["result"]["user_id"].split(":")[-1]
         name = f"Tuner - {session['result']['name']}"
-        if not "test" in name:
+        if "test" not in name:
             matching_playlists = []
             playlists = sp.user_playlists(user)
             while playlists:

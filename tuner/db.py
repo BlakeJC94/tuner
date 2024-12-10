@@ -1,9 +1,24 @@
 import os
 from dataclasses import dataclass, asdict
 
+import pylast
 from pinecone.grpc import PineconeGRPC as Pinecone
 
 from tuner.globals import PINECONE_HOST
+
+
+@dataclass
+class Artist:
+    name: str
+    id: str | None = None
+    lfm_result: pylast.Artist | None = None
+
+    @classmethod
+    def from_lfm(cls, result: pylast.Artist):
+        return cls(name=result.name, lfm_result=result)
+
+    def __hash__(self):
+        return hash((self.name, self.id))
 
 
 @dataclass
@@ -75,16 +90,21 @@ class TunerOutput:
         shared_artist_ids = list(
             set(self.match_md.artist_ids).intersection(set(self.user_md.artist_ids))
         )
-        recommended_artist_ids = [a for a in self.match_md.artist_ids if a not in shared_artist_ids]
+        recommended_artist_ids = [
+            a for a in self.match_md.artist_ids if a not in shared_artist_ids
+        ]
         return list(set([*shared_artist_ids, *recommended_artist_ids]))
 
     @property
-    def sp_artists(self) -> list[tuple[str, str]]:
-        match_artists = list(zip(self.match_md.artists_ids, self.match_md.artists))
-        user_artists = list(zip(self.user_md.artists_ids, self.user_md.artists))
-        shared_artists = list(
-            set(match_artists).intersection(set(user_artists))
-        )
+    def sp_artists(self) -> list[Artist]:
+        match_artists = [
+            Artist(n, i)
+            for i, n in zip(self.match_md.artist_ids, self.match_md.artists)
+        ]
+        user_artists = [
+            Artist(n, i) for i, n in zip(self.user_md.artist_ids, self.user_md.artists)
+        ]
+        shared_artists = list(set(match_artists).intersection(set(user_artists)))
         recommended_artists = [a for a in match_artists if a not in shared_artists]
         return [*shared_artists, *recommended_artists]
 
@@ -106,7 +126,9 @@ def upload_genre_vector(index, db_metadata, genre_vec):
     )
 
 
-def search_for_matches(index, db_metadata, genre_vec) -> list[tuple[float, TunerMetadata]]:
+def search_for_matches(
+    index, db_metadata, genre_vec
+) -> list[tuple[float, TunerMetadata]]:
     matches = (
         index.query(
             vector=genre_vec,
@@ -118,7 +140,9 @@ def search_for_matches(index, db_metadata, genre_vec) -> list[tuple[float, Tuner
         .get("matches", [])
     )
     matches = [
-        (m["score"], TunerMetadata(**m["metadata"])) for m in matches if m["id"] != db_metadata.id
+        (m["score"], TunerMetadata(**m["metadata"]))
+        for m in matches
+        if m["id"] != db_metadata.id
     ]
     return sorted(matches, key=lambda x: -x[0])
 
