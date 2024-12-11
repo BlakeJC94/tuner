@@ -1,12 +1,15 @@
 import os
 import random
 import asyncio
+import logging
 from dataclasses import dataclass
 
 import aiohttp
 import pylast
 
 from tuner.db import Artist
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -71,6 +74,7 @@ async def get_top_tracks(
 async def get_similar_tracks(
     lfm: pylast.LastFMNetwork,
     track: Track,
+    n_similar_tracks: int = 3,
 ) -> list[Track]:
     def fetch_similar_tracks(lfm, track):
         try:
@@ -82,7 +86,7 @@ async def get_similar_tracks(
                 name=i.item.title,
                 artists=i.item.artist.name,
             )
-            for i in lfm_track.get_similar(limit=3)
+            for i in lfm_track.get_similar(limit=n_similar_tracks)
         ]
         return similar_tracks
 
@@ -107,6 +111,7 @@ async def get_spotify_match(
         headers={"Authorization": f"Bearer {access_token}"},
     )
     if not data["tracks"]["items"]:
+        logger.error(f"No match for {track.name}, by {track.artists}")
         return None
     return Track.from_spotify_track(data["tracks"]["items"][0])
 
@@ -168,10 +173,14 @@ async def add_preview_url(
         url,
         params={"q": f'track:"{track.name}" artist:"{track.artists}"'},
     )
+    if "data" not in data:
+        logger.error(f"No data in response ({track.name}, {track.artists})")
+        return track
     if "data" not in data or not data["data"]:
-        print("BLOOF")
+        logger.error(f"Empty data in response ({track.name}, {track.artists})")
         return track
     track.preview_url = data["data"][0].get("preview")
+    return track
 
 
 # %%
@@ -181,36 +190,66 @@ async def process_artist(
     access_token: str,
     lfm: pylast.LastFMNetwork,
     artist: Artist,
+    n_top_tracks_per_artist: int = 3,
+    n_similar_tracks_per_top_track: int = 2,
+    n_similar_artists: int = 3,
+    n_top_tracks_per_similar_artist: int = 10,
+    n_similar_artist_top_tracks_subsample: int = 3,
 ) -> list[Track]:
     tracks = []
 
     # Get random 3 tracks
     top_tracks = await get_top_tracks(session, access_token, artist.id)
-    top_tracks = random.sample(top_tracks, 3)
+    top_tracks = random.sample(top_tracks, n_top_tracks_per_artist)
     tracks.extend(top_tracks)
 
-    for track in top_tracks:
-        # Get similar track for each top track
-        similar_tracks = await get_similar_tracks(lfm, track)
-        # Match each track to Spotify
-        spotify_matches = await asyncio.gather(
-            *[
-                get_spotify_match(session, access_token, track)
-                for track in similar_tracks
-            ]
-        )
-        tracks.extend(spotify_matches)
+    # Get similar track for each top track and match each track to Spotify
+    similar_tracks = await asyncio.gather(
+        *[
+            get_similar_tracks(lfm, track, n_similar_tracks_per_top_track)
+            for track in top_tracks
+        ]
+    )
+    similar_tracks = [t for r in similar_tracks for t in r]
+    spotify_matches = await asyncio.gather(
+        *[get_spotify_match(session, access_token, track) for track in similar_tracks]
+    )
+    tracks.extend(spotify_matches)
+
+    # for track in top_tracks:
+    #     # Get similar track for each top track
+    #     similar_tracks = await get_similar_tracks(lfm, track, )
+    #     # Match each track to Spotify
+    #     spotify_matches = await asyncio.gather(
+    #         *[
+    #             get_spotify_match(session, access_token, track)
+    #             for track in similar_tracks
+    #         ]
+    #     )
+    #     tracks.extend(spotify_matches)
 
     # Get similar artists and top 5 tracks for each
-    similar_artists = await get_similar_artists(lfm, artist)
+    # similar_artists = await get_similar_artists(lfm, artist, n_similar_artists)
+    try:
+        artist = lfm.get_artist(artist.name)
+        related_artists = artist.get_similar(limit=n_similar_artists)
+    except Exception:
+        logger.error(f"Couldn't get related artists for {artist.name}")
+        related_artists = []
+    similar_artists = [Artist.from_lfm(r.item) for r in related_artists]
 
     # Get top 5 tracks for each similar artist
+    # TODO async across similar artists
     for similar_artist in similar_artists:
-        similar_artist_top_tracks = await get_top_tracks_lfm(lfm, similar_artist)
+        similar_artist_top_tracks = [
+            Track.from_lfm(t.item)
+            for t in similar_artist.lfm_result.get_top_tracks(limit=n_top_tracks_per_similar_artist)
+        ]
         spotify_matches = await asyncio.gather(
             *[
                 get_spotify_match(session, access_token, track)
-                for track in random.sample(similar_artist_top_tracks, 3)
+                for track in random.sample(similar_artist_top_tracks,
+                                           n_similar_artist_top_tracks_subsample)
             ]
         )
         tracks.extend(spotify_matches)
@@ -241,4 +280,4 @@ async def get_playlist(access_token: str, artists: list[Artist]) -> list[Track]:
         ]
         results = await asyncio.gather(*tasks)
 
-    return [t for r in results for t in r if t is not None]
+    return [t for r in results for t in r]

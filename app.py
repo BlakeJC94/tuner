@@ -76,6 +76,7 @@ def results():
         access_token = auth_manager.get_cached_token()["access_token"]
         artists = output.sp_artists
         tracks = asyncio.run(get_playlist(access_token, artists))
+        tracks = random.sample(tracks, min(16, len(tracks)))
         tracks = [asdict(t) for t in tracks]
 
         session["result"] = {
