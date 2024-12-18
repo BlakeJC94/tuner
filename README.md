@@ -1,4 +1,4 @@
-# tuner
+# [tuner](https://tunerapp.xyz/)
 An application to find other Spotify users with similar music tastes
 
 ## Usage
@@ -8,9 +8,13 @@ SPOTIPY_CLIENT_ID="..."
 SPOTIPY_CLIENT_SECRET="..."
 SPOTIPY_REDIRECT_URI="..."
 PINECONE_API_KEY="..."
+LASTFM_API_KEY="..."
+LASTFM_API_SECRET="..."
 ```
 
-...
+Install the app with `uv sync` and start a local web server with `uv run python app.py`
+
+The CLI proof of concept can be run with `uv run tuner`
 
 
 ## References
@@ -20,5 +24,12 @@ PINECONE_API_KEY="..."
 
 This requires Python >= 3.11, and dependencies are managed by UV `0.5.1`
 
-To add dependencies, use `uv add [--dev] <package-name>`, and update the requirements
-files using `uv export [--dev] > requirements[-dev].txt`.
+Adding dependencies:
+```
+uv add [--dev] <package-name>
+```
+
+Compile requirement.txt for deployment
+```
+uv export --no-hashes --no-dev > requirements.txt
+```
