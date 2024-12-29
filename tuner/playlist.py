@@ -192,8 +192,8 @@ async def process_artist(
     artist: Artist,
     n_top_tracks_per_artist: int = 3,
     n_similar_tracks_per_top_track: int = 2,
-    n_similar_artists: int = 3,
-    n_top_tracks_per_similar_artist: int = 10,
+    n_similar_artists: int = 2,
+    n_top_tracks_per_similar_artist: int = 6,
     n_similar_artist_top_tracks_subsample: int = 3,
 ) -> list[Track]:
     tracks = []
