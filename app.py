@@ -71,7 +71,7 @@ def results():
             if not foo:
                 continue
             image_urls.append(foo[0])
-        image_urls = random.sample(image_urls, min(6, len(image_urls)))
+        image_urls = random.sample(image_urls, min(10, len(image_urls)))
 
         access_token = auth_manager.get_cached_token()["access_token"]
         artists = output.sp_artists
