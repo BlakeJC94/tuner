@@ -79,15 +79,15 @@ async def get_similar_tracks(
     def fetch_similar_tracks(lfm, track):
         try:
             lfm_track = lfm.get_track(track.artists, track.name)
+            similar_tracks = [
+                Track(
+                    name=i.item.title,
+                    artists=i.item.artist.name,
+                )
+                for i in lfm_track.get_similar(limit=n_similar_tracks)
+            ]
         except Exception:
             return []
-        similar_tracks = [
-            Track(
-                name=i.item.title,
-                artists=i.item.artist.name,
-            )
-            for i in lfm_track.get_similar(limit=n_similar_tracks)
-        ]
         return similar_tracks
 
     return await asyncio.to_thread(fetch_similar_tracks, lfm, track)
