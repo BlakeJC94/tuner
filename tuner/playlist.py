@@ -200,7 +200,7 @@ async def process_artist(
 
     # Get random 3 tracks
     top_tracks = await get_top_tracks(session, access_token, artist.id)
-    top_tracks = random.sample(top_tracks, n_top_tracks_per_artist)
+    top_tracks = random.sample(top_tracks, min(n_top_tracks_per_artist,len(top_tracks)))
     tracks.extend(top_tracks)
 
     # Get similar track for each top track and match each track to Spotify
