@@ -99,9 +99,9 @@ header {
     border-radius: 25px;
     font-size: 20px;
     cursor: pointer;
-    margin-top: 20px;
+    margin-top: 10px;
     display: inline-block;
-    margin-bottom: 10px;
+    margin-bottom: 50px;
 }
 
 .cta-button-large:hover {
@@ -265,6 +265,11 @@ input[type="email"] {
 }
 
 /* Playlist table */
+#playlist-section {
+    padding-top: 20px;
+    justify-content: center;
+}
+
 .playlist-table {
     width: 100%;
     border-spacing: 0;
@@ -346,6 +351,15 @@ input[type="email"] {
 .btn:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+}
+
+/* Share section */
+#share-section {
+    margin-top: 40px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
 }
 
 /* General Mobile Responsiveness */
@@ -463,6 +477,5 @@ input[type="email"] {
         overflow-x: auto;
         /* Allow the plot to scroll horizontally if needed */
     }
-
 }
 

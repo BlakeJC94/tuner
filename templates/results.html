@@ -51,17 +51,15 @@
         <!-- Matching Profile Section -->
         <section class="center-justify">
             <h2>
-                You matched with
-                <a href="{{ match.profile_link }}" class="profile-link">{{ match.name }}</a>
-                ({{ match.score }}%)
+                You matched with {{ match.name }} ({{ match.score }}%)
             </h2>
         </section>
 
         <!-- Images Section -->
         <div class="image-gallery">
-            {% for url in match.image_urls %}
+            {% for url,name in match.image_urls %}
             <div class="image-container">
-                <img src="{{ url }}" alt="Related Image" />
+                <img src="{{ url }}" alt="{{ name }}" title="{{ name }}" />
             </div>
             {% endfor %}
         </div>
@@ -97,47 +95,130 @@
             </ul>
         </div>
         {% endif %}
+    </div>
 
-        <!-- Playlist suggestion -->
-        <h2>Spotify Playlist</h2>
-        {% if match.playlist_data %}
-        <p style="text-align: center;">
-            Playlist created: <a href="{{ match.playlist_data.external_url }}">{{ match.playlist_data.name }}</a>
-        </p>
-        {% endif %}
-        <table class="playlist-table">
-            <thead>
-                <tr>
-                    <th>Preview</th>
-                    <th>Image</th>
-                    <th>Track</th>
-                    <th>Artist</th>
-                    <th>Album</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for track in match.tracks %}
-                <tr>
+    <div id="playlist-section">
+        <button id="generate-playlist-button" class="btn">Generate Playlist</button>
+    </div>
+
+    <script>
+        document.getElementById('generate-playlist-button').addEventListener('click', function () {
+            // Show loading message
+            const generateButton = document.getElementById('generate-playlist-button')
+            generateButton.disabled = true;
+            generateButton.innerHTML = 'Generating Playlist...';
+
+            // Make a POST request to generate the playlist
+            fetch('/playlist', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Create a table to display the playlist
+                const table = document.createElement('table');
+                table.className = "playlist-table";
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = '' +
+                    '<th>Preview</th>' +
+                    '<th>Image</th>' +
+                    '<th>Title</th>' +
+                    '<th>Artist</th>' +
+                    '<th>Album</th>';
+                table.appendChild(headerRow);
+
+                data.forEach(track => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
                     <td style="vertical-align: middle;text-align: center;">
-                        <button class="preview-btn" onclick="playPreview('{{ track.preview_url }}', this)"
-                            {% if not track.preview_url %}disabled{% endif %}>
+                        <button class="preview-btn" onclick="playPreview('${track.preview_url}', this)"
+                            ${(track.preview_url == null) ? 'disabled' : ''}>
                             ⏵
                         </button>
                     </td>
-                    <td><img src="{{ track.image_url }}" alt="{{ track.name }} cover" class="track-image"></td>
-                    <td>{{ track.name }}</td>
-                    <td>{{ track.artists }}</td>
-                    <td>{{ track.album }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    <td><img src="${track.image_url}" alt="${track.name} cover" class="track-image"></td>
+                    <td>${track.name}</td>
+                    <td>${track.artists}</td>
+                    <td>${track.album}</td>
+                        `;
+                    table.appendChild(row);
+                });
+
+                const saveButton = document.createElement('button');
+                saveButton.id = 'save-button';
+                saveButton.className = 'btn';
+                saveButton.innerHTML = 'Save Playlist'
+                saveButton.addEventListener('click', function () {
+                    fetch('/save', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const saveButton = document.getElementById('save-button');
+                        saveButton.disabled = true;
+                        saveButton.innerHTML = 'Saved playlist';
+                    });
+                });
+
+                // Replace loading message with the playlist table
+                const playlistSection = document.getElementById('playlist-section');
+                playlistSection.innerHTML = ''; // Clear previous content
+                playlistSection.appendChild(table);
+                playlistSection.appendChild(saveButton);
+            })
+            .catch(error => {
+                console.error('Error generating playlist:', error);
+                document.getElementById('loading').innerText = 'Error generating playlist. Please try again.';
+            });
+        });
+    </script>
+</section>
+<section class="center-justify">
+    <div id="share-section">
+        <p style="text-align: center;">
+            This app improves as more people use it! Sharing it with your friends helps us gather
+            more data and make the recommendations even better
+        </p>
+        <div>
+            <button id="twitter-share" style="padding: 10px 15px; border-radius: 5px; background-color: #1da1f2; color: white; cursor: pointer; margin-right: 10px;">
+                Share on Twitter
+            </button>
+            <button id="facebook-share" style="padding: 10px 15px; border-radius: 5px; background-color: #4267B2; color: white; cursor: pointer; margin-right: 10px;">
+                Share on Facebook
+            </button>
+            <button id="threads-share" style="padding: 10px 15px; border-radius: 5px; background-color: #1B9CFC; color: white; cursor: pointer; margin-right: 10px;">
+                Share on Threads
+            </button>
+            <button id="bluesky-share" style="padding: 10px 15px; border-radius: 5px; background-color: #1DA1F2; color: white; cursor: pointer;">
+                Share on Bluesky
+            </button>
+        </div>
+        <script>
+            // Twitter Share
+            document.getElementById('twitter-share').addEventListener('click', function () {
+                const url = 'https://tunerapp.xyz';
+                const text = 'Check out this amazing Spotify Profile Statistics app! The recommendations improve as more people use it. Try it now: ';
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}${encodeURIComponent(url)}`, '_blank');
+            });
+
+            // Facebook Share
+            document.getElementById('facebook-share').addEventListener('click', function () {
+                const url = 'https://tunerapp.xyz';
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+            });
+
+            // Threads Share
+            document.getElementById('threads-share').addEventListener('click', function () {
+                const url = 'https://tunerapp.xyz';
+                window.open(`https://www.threads.net/?url=${encodeURIComponent(url)}`, '_blank');
+            });
+
+            // Bluesky Share
+            document.getElementById('bluesky-share').addEventListener('click', function () {
+                const url = 'https://tunerapp.xyz';
+                window.open(`https://bsky.app/share?url=${encodeURIComponent(url)}`, '_blank');
+            });
+        </script>
     </div>
-    {% if not match.playlist_data %}
-    <form action="/results" method="POST">
-        <button type="submit" class="btn">Add playlist to Spotify</button>
-    </form>
-    {% endif %}
 </section>
 <section class="center-justify">
     <div class="donation-section">

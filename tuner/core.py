@@ -1,5 +1,6 @@
 import logging
 
+import spotipy
 from tuner.encode import get_genre_vec
 from tuner.db import (
     TunerMetadata,
@@ -14,7 +15,7 @@ from tuner.data import get_data
 logger = logging.getLogger(__name__)
 
 
-def tuner_match(sp):
+def tuner_match(sp: spotipy.Spotify) -> TunerOutput:
     user_data = get_data(sp)
 
     # Get genre embeddings

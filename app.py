@@ -5,10 +5,11 @@ from dataclasses import asdict
 
 import spotipy
 from dotenv import load_dotenv
-from flask import Flask, render_template, session, request, redirect
+from flask import Flask, render_template, session, request, redirect, jsonify
 from flask_session import Session
 
 from tuner.core import tuner_match
+from tuner.db import Artist
 from tuner.playlist import get_playlist
 from tuner.globals import SCOPE
 
@@ -61,77 +62,98 @@ def results():
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    if "result" not in session:
-        output = tuner_match(sp)
+    output = tuner_match(sp)
 
-        dim = 160
-        image_urls = []
-        for a in sp.artists(output.artist_ids)["artists"]:
-            foo = [i["url"] for i in a["images"] if i["width"] == dim]
-            if not foo:
-                continue
-            image_urls.append(foo[0])
-        image_urls = random.sample(image_urls, min(6, len(image_urls)))
+    dim = 160
+    image_urls = []
+    for a in sp.artists(output.artist_ids)["artists"]:
+        foo = [i["url"] for i in a["images"] if i["width"] == dim]
+        if not foo:
+            continue
+        image_urls.append((foo[0], a["name"]))
+    image_urls = random.sample(image_urls, min(10, len(image_urls)))
 
-        access_token = auth_manager.get_cached_token()["access_token"]
-        artists = output.sp_artists
-        tracks = asyncio.run(get_playlist(access_token, artists))
-        tracks = random.sample(tracks, min(16, len(tracks)))
-        tracks = [asdict(t) for t in tracks]
-
-        session["result"] = {
-            "user_id": output.user_md.id,
-            "name": output.match_md.display_name,
-            "score": f"{100 * output.score:.2f}",
-            "profile_link": output.match_md.url,
-            "common_genres": output.shared_genres[:6],
-            "common_artists": output.shared_artists[:6],
-            "recommended_artists": output.recommended_artists[:6],
-            "image_urls": image_urls,
-            "tracks": tracks,
-            "playlist_data": None,
-        }
-
-    if request.method == "POST" and not session["result"]["playlist_data"]:
-        user = session["result"]["user_id"].split(":")[-1]
-        name = f"Tuner - {session['result']['name']}"
-        if "test" not in name:
-            matching_playlists = []
-            playlists = sp.user_playlists(user)
-            while playlists:
-                for i, playlist in enumerate(playlists["items"]):
-                    if playlist["name"].startswith(name):
-                        matching_playlists.append(playlist["name"])
-                if playlists["next"]:
-                    playlists = sp.next(playlists)
-                else:
-                    playlists = None
-
-            n_matching = len(matching_playlists)
-            if n_matching > 0:
-                name = f"{name} ({n_matching+1})"
-
-            playlist = sp.user_playlist_create(
-                user,
-                name,
-                public=True,
-                collaborative=False,
-                description="Suggested playlist from Tuner",
-            )
-            sp.user_playlist_add_tracks(
-                user,
-                playlist["id"],
-                [t["uri"] for t in session["result"]["tracks"]],
-            )
-            playlist_data = {
-                "name": name,
-                "external_url": playlist["external_urls"]["spotify"],
-            }
-            session["result"]["playlist_data"] = playlist_data
+    session["result"] = {
+        "user_id": output.user_md.id,
+        "name": output.match_md.display_name,
+        "score": f"{100 * output.score:.2f}",
+        "profile_link": output.match_md.url,
+        "common_genres": output.shared_genres[:6],
+        "common_artists": output.shared_artists[:6],
+        "recommended_artists": output.recommended_artists[:6],
+        "image_urls": image_urls,
+        "artists": [asdict(a) for a in output.sp_artists],
+        "playlist_data": None,
+    }
 
     return render_template("results.html", match=session["result"])
 
 
-# TODO Remove debug mode
+@app.route("/playlist", methods=["POST"])
+def playlist():
+    tracks = session.get("tracks", None)
+    if tracks is None:
+        cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+        access_token = auth_manager.get_cached_token()["access_token"]
+        artists = [Artist(**a) for a in session["result"]["artists"]]
+        tracks = asyncio.run(get_playlist(access_token, artists))
+        tracks = random.sample(tracks, min(16, len(tracks)))
+        tracks = [asdict(t) for t in tracks]
+        session["tracks"] = tracks
+    return jsonify(tracks)
+
+
+@app.route("/save", methods=["POST"])
+def save():
+    if session["result"]["playlist_data"]:
+        return jsonify()
+
+    cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler)
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        return jsonify()
+
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+
+    user = session["result"]["user_id"].split(":")[-1]
+    name = f"Tuner - {session['result']['name']}"
+    if "test" in name:
+        return jsonify()
+    matching_playlists = []
+    playlists = sp.user_playlists(user)
+    while playlists:
+        for i, playlist in enumerate(playlists["items"]):
+            if playlist["name"].startswith(name):
+                matching_playlists.append(playlist["name"])
+        if playlists["next"]:
+            playlists = sp.next(playlists)
+        else:
+            playlists = None
+
+    n_matching = len(matching_playlists)
+    if n_matching > 0:
+        name = f"{name} ({n_matching+1})"
+
+    playlist = sp.user_playlist_create(
+        user,
+        name,
+        public=True,
+        collaborative=False,
+        description="Suggested playlist from Tuner",
+    )
+    sp.user_playlist_add_tracks(
+        user,
+        playlist["id"],
+        [t["uri"] for t in session["tracks"]],
+    )
+    playlist_data = {
+        "name": name,
+        "external_url": playlist["external_urls"]["spotify"],
+    }
+    session["result"]["playlist_data"] = playlist_data
+    return jsonify()
+
+
 if __name__ == "__main__":
     app.run(debug=False, port=5000)

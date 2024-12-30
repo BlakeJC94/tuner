@@ -14,7 +14,8 @@ def get_genre_vec(data) -> list[float]:
 
     weighted_embeddings = np.zeros((1, all_embeddings.shape[-1]))
     for genre, count in data.genres:
-        if not genre in all_genres:
+        if genre not in all_genres:
+            logger.error(f"'{genre}' not in vector table")
             continue
         genre_idx = all_genres.index(genre)
         embedding = all_embeddings[genre_idx, :].reshape(1, -1)

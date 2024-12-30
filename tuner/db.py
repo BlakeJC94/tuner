@@ -1,4 +1,5 @@
 import os
+import random
 from dataclasses import dataclass, asdict
 
 import pylast
@@ -45,7 +46,7 @@ class TunerMetadata:
     def genre_counts(self) -> dict[str, int]:
         match_genres = {}
         for g in self.genres:
-            genre, count = g.split(":", 1)
+            genre, count = g.rsplit(":", 1)
             genre = genre.strip().title()
             match_genres[genre] = int(count)
         return match_genres
@@ -127,12 +128,12 @@ def upload_genre_vector(index, db_metadata, genre_vec):
 
 
 def search_for_matches(
-    index, db_metadata, genre_vec
+    index, db_metadata, genre_vec, k=10
 ) -> list[tuple[float, TunerMetadata]]:
     matches = (
         index.query(
             vector=genre_vec,
-            top_k=4,
+            top_k=k+1,
             include_values=False,
             include_metadata=True,
         )
@@ -144,11 +145,11 @@ def search_for_matches(
         for m in matches
         if m["id"] != db_metadata.id
     ]
-    return sorted(matches, key=lambda x: -x[0])
+    return sorted(matches[:k], key=lambda x: -x[0])
 
 
-# TODO Random selection
 def select_match(
     matches: list[tuple[float, TunerMetadata]],
 ) -> tuple[float, TunerMetadata]:
-    return matches[0]
+    scores = [s for s, _ in matches]
+    return random.choices(matches, weights=scores, k=1)[0]

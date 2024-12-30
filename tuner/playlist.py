@@ -2,6 +2,7 @@ import os
 import random
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 
 import aiohttp
@@ -52,9 +53,16 @@ async def fetch_json(
 ) -> dict:
     params = params or {}
     headers = headers or {}
-    async with session.get(url, headers=headers, params=params) as response:
-        response.raise_for_status()
-        return await response.json()
+    error = None
+    for _ in range(5):
+        async with session.get(url, headers=headers, params=params) as response:
+            try:
+                response.raise_for_status()
+                return await response.json()
+            except Exception as err:
+                error = err
+                time.sleep(0.2 + random.random())
+    raise error
 
 
 # %%
@@ -79,15 +87,15 @@ async def get_similar_tracks(
     def fetch_similar_tracks(lfm, track):
         try:
             lfm_track = lfm.get_track(track.artists, track.name)
+            similar_tracks = [
+                Track(
+                    name=i.item.title,
+                    artists=i.item.artist.name,
+                )
+                for i in lfm_track.get_similar(limit=n_similar_tracks)
+            ]
         except Exception:
             return []
-        similar_tracks = [
-            Track(
-                name=i.item.title,
-                artists=i.item.artist.name,
-            )
-            for i in lfm_track.get_similar(limit=n_similar_tracks)
-        ]
         return similar_tracks
 
     return await asyncio.to_thread(fetch_similar_tracks, lfm, track)
@@ -192,15 +200,15 @@ async def process_artist(
     artist: Artist,
     n_top_tracks_per_artist: int = 3,
     n_similar_tracks_per_top_track: int = 2,
-    n_similar_artists: int = 3,
-    n_top_tracks_per_similar_artist: int = 10,
+    n_similar_artists: int = 2,
+    n_top_tracks_per_similar_artist: int = 6,
     n_similar_artist_top_tracks_subsample: int = 3,
 ) -> list[Track]:
     tracks = []
 
     # Get random 3 tracks
     top_tracks = await get_top_tracks(session, access_token, artist.id)
-    top_tracks = random.sample(top_tracks, n_top_tracks_per_artist)
+    top_tracks = random.sample(top_tracks, min(n_top_tracks_per_artist,len(top_tracks)))
     tracks.extend(top_tracks)
 
     # Get similar track for each top track and match each track to Spotify
