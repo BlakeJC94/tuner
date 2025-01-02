@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Tuner{% endblock %}
+
+{% block content %}
+<section class="left-justify">
+    <h1>Privacy Policy</h1>
+    <p style="text-align: center;">Your privacy is important to us. This Privacy Policy explains
+        what information we collect and how we use it, and how to delete your data if needed.</p>
+
+    <h4>Data We Collect</h4>
+    <p>We collect the following information:</p>
+    <ul>
+        <li>Your Spotify username</li>
+        <li>Your top artists (as retrieved from Spotify)</li>
+    </ul>
+    We do not collect history of who you've matched with or what playlists you have generated or
+    saved.
+
+    <h4>How We Use Your Data</h4>
+    <p>We use your data to:</p>
+    <div>
+        <ul>
+            <li>Determine your taste in music.</li>
+            <li>Match your top artists and taste with other users with similar music taste.</li>
+            <li>Generate a playlist based on shared interests with other users, which can optionally be saved to your Spotify account.</li>
+        </ul>
+    </div>
+    No data will be used to train AI or machine learning models.
+
+    <h4>Data Sharing</h4>
+    <p>We do not sell or share your data with third parties. All data is used solely for this app's functionality.</p>
+
+    <h4>Data Retention</h4>
+    <p> We retain your data indefinitely to enhance the app's functionality by allowing other users to match with your profile.</p>
+
+    <h4>Your Rights</h4>
+    <p>You have the right to request access to your data or deletion of your data. If you would like your data to be deleted, please <a href="{{ url_for('delete') }}">click here</a> to delete.</p>
+
+    <h4>Contact Us</h4>
+    <p style="padding: 0px 5px 50px 5px;">If you have any questions about this Privacy Policy, please contact me at <a href="mailto:blake.j.shady@gmail.com">blake.j.shady@gmail.com</a>.</p>
+</section>
+
+{% endblock %}

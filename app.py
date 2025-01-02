@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, session, request, redirect, jsonify
 from flask_session import Session
 
-from tuner.core import tuner_match
+from tuner.core import tuner_match, tuner_delete
 from tuner.db import Artist
 from tuner.playlist import get_playlist
 from tuner.globals import SCOPE
@@ -30,6 +30,36 @@ def home():
     return render_template("home.html")
 
 
+@app.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+@app.route('/delete')
+def delete():
+    session['delete'] = True
+
+    cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
+    auth_manager = spotipy.oauth2.SpotifyOAuth(
+        scope=SCOPE,
+        cache_handler=cache_handler,
+        show_dialog=True,
+    )
+
+    if not auth_manager.validate_token(cache_handler.get_cached_token()):
+        # Display sign in link when no token
+        auth_url = auth_manager.get_authorize_url()
+        return redirect(auth_url)
+
+    try:
+        tuner_delete(spotipy.Spotify(auth_manager=auth_manager))
+        message = 'Your data has been deleted successfully.'
+    except Exception as err:
+        message = f"Error deleting your data, please try again. ({err})"
+
+    session['delete'] = False
+    return render_template("deleted.html",message=message)
+
+
 @app.route("/login")
 def login():
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -42,15 +72,14 @@ def login():
     if request.args.get("code"):
         # Step 2. Being redirected from Spotify auth page
         auth_manager.get_access_token(request.args.get("code"), as_dict=False)
-        return redirect("/results")
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 1. Display sign in link when no token
         auth_url = auth_manager.get_authorize_url()
         return redirect(auth_url)
 
-    # Step 3. Signed in, display data
-    return redirect("/results")
+    # Signed in, display data
+    return redirect("/delete") if session.get('delete', None) else redirect("/results")
 
 
 @app.route("/results", methods=["GET", "POST"])
@@ -62,7 +91,10 @@ def results():
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    output = tuner_match(sp)
+    try:
+        output = tuner_match(sp)
+    except Exception:
+        return render_template("in-progress.html")
 
     dim = 160
     image_urls = []

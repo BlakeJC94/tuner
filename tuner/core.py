@@ -41,3 +41,9 @@ def tuner_match(sp: spotipy.Spotify) -> TunerOutput:
     output = TunerOutput(match_metadata, user_metadata, score)
 
     return output
+
+
+def tuner_delete(sp):
+    user = sp.current_user()
+    index = get_pinecone_index()
+    index.delete(ids=[user["uri"]])
